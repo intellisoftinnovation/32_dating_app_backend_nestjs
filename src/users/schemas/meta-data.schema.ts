@@ -24,7 +24,7 @@ export class MetaData {
     @Prop({ type: Date, default: Date.now })
     createdAt: Date;
 
-    @Prop({ type: String, enum: AccountStatus, default: AccountStatus.ACTIVE, required: true })
+    @Prop({ type: String, enum: Object.values(AccountStatus), default: AccountStatus.ACTIVE, required: true })
     accountStatus: AccountStatus;
 
     @Prop({ type: Date, default: Date.now, required: true })
@@ -33,7 +33,7 @@ export class MetaData {
     @Prop({ type: Boolean, default: false, required: true })
     isAdmin: boolean;
 
-    @Prop({ type: String, enum: UserRole, default: UserRole.USER, required: true })
+    @Prop({ type: String, enum: Object.values(UserRole), default: UserRole.USER, required: true })
     userRole: UserRole;
 
     @Prop({ type: [String], enum: Object.values(Privileges), default: [Privileges.DEFAULT], required: true })
