@@ -6,6 +6,7 @@ interface Envs {
   DB_URI: string;
   JWTSECRET: string;
   JWTEXPIREIN: string;
+  ERRORLOGS: boolean
 }
 
 const envSchema = joi
@@ -14,6 +15,7 @@ const envSchema = joi
     DB_URI: joi.string().required(),
     JWTSECRET: joi.string().required(),
     JWTEXPIREIN: joi.string().required(),
+    ERRORLOGS: joi.boolean().required(),
   })
   .unknown();
 
@@ -30,4 +32,5 @@ export const envs: Envs = {
   DB_URI: value.DB_URI,
   JWTSECRET: value.JWTSECRET,
   JWTEXPIREIN: value.JWTEXPIREIN,
+  ERRORLOGS: value.ERRORLOGS,
 };

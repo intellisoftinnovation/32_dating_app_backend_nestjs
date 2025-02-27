@@ -17,9 +17,9 @@ async function main() {
   app.setGlobalPrefix(`${prefix}/${version}`);
 
   const config = new DocumentBuilder()
-    .setTitle('Feedback API')
-    .setDescription('Feedback API')
-    .setVersion('0.0.2')
+    .setTitle('Chomy - Api')
+    .setDescription('Chomy - Api Documentation')
+    .setVersion('0.0.1')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(`${prefix}/${version}/docs`, app, document);
