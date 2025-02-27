@@ -12,7 +12,7 @@ export class CreateUserDto {
     
     @IsString()
     @IsNotEmpty()
-    // TODO: Add regex
+    // TODO: Add password regex
     @ApiProperty()
     password: string;
 }

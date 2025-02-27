@@ -17,6 +17,7 @@ export class CustomValidationPipe extends ValidationPipe {
             property,
             paths,
             constraints,
+            childrens: error.children
           };
         });
         return new BadRequestException({ message: 'Validation Error', errors: errorMessages });
@@ -33,6 +34,7 @@ export class CustomValidationPipe extends ValidationPipe {
         property,
         paths,
         constraints,
+        childrens: error.children
       };
     });
     return new BadRequestException({ message: 'Validation Error', errors: errorMessages });

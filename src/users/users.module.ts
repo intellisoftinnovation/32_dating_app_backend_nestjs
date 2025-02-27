@@ -5,8 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { Profile, ProfileSchema } from './schemas/profile.schema';
 import { MetaData, MetaDataSchema } from './schemas/meta-data.schema';
-import { GeoLocation, GeoLocationSchema } from './schemas/geo-location.schema';
-import { SocialNetwork, SocialNetworkSchema } from './schemas/social-network.schema';
 
 import { AuthModule } from '../auth/auth.module';
 
@@ -14,9 +12,7 @@ import { AuthModule } from '../auth/auth.module';
   imports:[MongooseModule.forFeature([
     {name: User.name , schema: UserSchema},
     {name: Profile.name , schema: ProfileSchema},
-    {name: MetaData.name , schema: MetaDataSchema},
-    {name: GeoLocation.name , schema: GeoLocationSchema },
-    {name: SocialNetwork.name , schema: SocialNetworkSchema },
+    {name: MetaData.name , schema: MetaDataSchema}
   ]), 
   forwardRef(() => AuthModule)
 ],

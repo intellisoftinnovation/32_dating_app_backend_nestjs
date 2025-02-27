@@ -39,18 +39,6 @@ export class MetaData {
     @Prop({ type: [String], enum: Object.values(Privileges), default: [Privileges.DEFAULT], required: true })
     privileges: Privileges[]; 
 
-    @Prop({ type: Boolean, default: false , required: true })
-    phoneVerified: boolean; 
-
-    @Prop({ type: Boolean, default: false , required: true })
-    genderVerified: boolean;
-
-    @Prop({ type: Boolean, default: false , required: true })
-    polityAgreement: boolean;
-
-
-    @Prop({ type: Boolean, default: false , required: true })
-    onBoardingCompleted: boolean;
 
 }
 
