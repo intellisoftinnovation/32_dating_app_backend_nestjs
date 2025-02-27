@@ -42,6 +42,7 @@ export enum Language{
 }
 
 export enum FamilySituation{
+    NO_CHILDREN      = "NO_CHILDREN",
     ONE_CHILD      = "ONE_CHILD",
     TWO_CHILDREN   = "TWO_CHILDREN",
     THREE_CHILDREN = "THREE_CHILDREN",
@@ -51,13 +52,13 @@ export enum FamilySituation{
 @Schema()
 export class Profile {
 
-    @Prop({ type: String, maxlength: 300 })
+    @Prop({ type: String, maxlength: 300 , default:""})
     description: string;
 
-    @Prop({type: String , enum: Object.values(Appearance)})
+    @Prop({type: String , enum: Object.values(Appearance), default: Appearance.AVERAGE})
     appearance: Appearance
 
-    @Prop({ type: Date})
+    @Prop({ type: Date , default:  () => new Date()})
     birthdate: Date;
 
     @Prop({ type: String, enum: Object.values(Gender), default: Gender.MALE, required: true })
@@ -72,22 +73,22 @@ export class Profile {
     @Prop({ type: [{type: mongoose.Schema.Types.ObjectId , ref: 'GeoLocation'}], required: true, default: []})
     geoLocations: GeoLocation[];
 
-    @Prop({type: Number})
+    @Prop({type: Number, default: 0 })
     altura: number;
 
-    @Prop({ type: String, enum: Object.values(BodyType)})
+    @Prop({ type: String, enum: Object.values(BodyType) , default: BodyType.AVERAGE})
     bodyType: BodyType;
 
-    @Prop({ type: Boolean})
+    @Prop({ type: Boolean, default: false})
     smoking: boolean;
 
-    @Prop({ type: String, enum: Object.values(Language)})
+    @Prop({ type: String, enum: Object.values(Language), default: Language.SPANISH})
     language: Language;
 
-    @Prop({ type: String, enum: Object.values(FamilySituation)})
+    @Prop({ type: String, enum: Object.values(FamilySituation), default: FamilySituation.NO_CHILDREN})
     familySituation: FamilySituation;
 
-    @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Profit'})
+    @Prop({type: Profit, default: () => new Profit()})
     profit: Profit;
 
 }

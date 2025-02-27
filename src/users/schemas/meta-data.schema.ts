@@ -21,14 +21,14 @@ export enum Privileges {
 
 @Schema()
 export class MetaData {
-    @Prop({ type: Date, default: Date.now })
+    @Prop({ type: Date, default:  () => new Date() })
     createdAt: Date;
 
     @Prop({ type: String, enum: Object.values(AccountStatus), default: AccountStatus.ACTIVE, required: true })
     accountStatus: AccountStatus;
 
-    @Prop({ type: Date, default: Date.now, required: true })
-    lastConnetion: Date;
+    @Prop({ type: Date, default:  () => new Date(), required: true })
+    lastConnection: Date;
 
     @Prop({ type: Boolean, default: false, required: true })
     isAdmin: boolean;
@@ -40,13 +40,17 @@ export class MetaData {
     privileges: Privileges[]; 
 
     @Prop({ type: Boolean, default: false , required: true })
-    onBoardingCompleted: boolean;
-
-    @Prop({ type: Boolean, default: false , required: true })
     phoneVerified: boolean; 
 
     @Prop({ type: Boolean, default: false , required: true })
     genderVerified: boolean;
+
+    @Prop({ type: Boolean, default: false , required: true })
+    polityAgreement: boolean;
+
+
+    @Prop({ type: Boolean, default: false , required: true })
+    onBoardingCompleted: boolean;
 
 }
 

@@ -6,8 +6,9 @@ import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { CustomValidationPipe } from './Pipes/CustomValidationPipe';
 import { QueryFailedFilter } from './Pipes/query-failed-exception.filter';
 import { DatabaseConnectionExceptionFilter } from './Pipes/database-connection-exception.filter.ts';
+import { AuthModule } from './auth/auth.module';
 @Module({
-  imports: [MongooseModule.forRoot(envs.DB_URI), UsersModule],
+  imports: [MongooseModule.forRoot(envs.DB_URI), UsersModule, AuthModule],
   providers:[
     {
       provide: APP_PIPE,

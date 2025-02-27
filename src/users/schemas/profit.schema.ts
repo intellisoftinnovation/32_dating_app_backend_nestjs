@@ -9,13 +9,13 @@ export enum Currency{
 
 @Schema()
 export class Profit {
-    @Prop({ type: Number, required: true })
+    @Prop({ type: Number, required: true , default: 0})
     min: number;
 
-    @Prop({ type: Number, required: true })
+    @Prop({ type: Number, required: true , default: 1})
     max: number;
 
-    @Prop({ type: String, enum: Object.values(Currency), required: true })
+    @Prop({ type: String, enum: Object.values(Currency), required: true , default: Currency.SOL})
     currency: string;
 }
 

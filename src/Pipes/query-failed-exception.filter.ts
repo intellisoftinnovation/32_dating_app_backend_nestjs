@@ -37,8 +37,16 @@ export class QueryFailedFilter implements ExceptionFilter {
         break;
     }
 
+    if (envs.ERRORLOGS) console.log('name:' , exception.name)
     switch (exception.name) {
       case 'ValidationError':
+        status = HttpStatus.BAD_REQUEST;
+        message = exception.message;
+        stack ={
+          ...exception
+        }
+        break;
+      case 'CastError':
         status = HttpStatus.BAD_REQUEST;
         message = exception.message;
         stack ={
