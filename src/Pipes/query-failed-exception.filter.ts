@@ -9,7 +9,7 @@ import { mongo, MongooseError } from 'mongoose';
 import { envs } from 'src/config';
 
 
-@Catch(mongo.MongoServerError) // Captura solo excepciones de Mongoose 
+@Catch(mongo.MongoServerError,MongooseError) // Captura solo excepciones de Mongoose 
 export class QueryFailedFilter implements ExceptionFilter {
   catch(exception: MongooseError & mongo.MongoServerError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -36,6 +36,17 @@ export class QueryFailedFilter implements ExceptionFilter {
         };
         break;
     }
+
+    switch (exception.name) {
+      case 'ValidationError':
+        status = HttpStatus.BAD_REQUEST;
+        message = exception.message;
+        stack ={
+          ...exception
+        }
+        break;
+    }
+    
 
     // Respuesta HTTP
     response.status(status).json({
