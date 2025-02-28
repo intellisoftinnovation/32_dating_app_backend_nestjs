@@ -164,6 +164,10 @@ export class UpdateUserDto {
     @ApiProperty({ type: ProfitDto })
     profit?: ProfitDto;
 
+    @IsOptional()
+    @IsString()
+    @ApiProperty()
+    phone?: string
 
     @IsOptional()
     @IsBoolean()

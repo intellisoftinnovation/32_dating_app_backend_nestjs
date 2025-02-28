@@ -11,7 +11,6 @@ export enum Gender {
     FEMALE = 'FEMALE',
 }
 
-
 export enum Appearance {
     ATTRACTIVE = 'ATTRACTIVE',
     AVERAGE = 'AVERAGE',
@@ -91,7 +90,8 @@ export class Profile {
     @Prop({ type: Profit, default: () => new Profit() })
     profit: Profit;
 
-    // FIXME: Add Phone Number
+    @Prop({ type: String ,default: "+51555555555", required: true })
+    phone: string; 
 
     @Prop({ type: Boolean, default: false, required: true })
     phoneVerified: boolean;

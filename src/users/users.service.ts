@@ -4,10 +4,11 @@ import { User } from './schemas/user.schema';
 import * as bycrypt from 'bcrypt'
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
-import { MetaData } from './schemas/meta-data.schema';
+import { AccountStatus, MetaData } from './schemas/meta-data.schema';
 import { Profile } from './schemas/profile.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
+import { FindForLoginDto } from './dto/find-for-login.dto';
 
 @Injectable()
 export class UsersService {
@@ -26,7 +27,7 @@ export class UsersService {
 
         await this.userModel.findByIdAndUpdate(user._id, { metaData: metaData._id, profile: profile._id });
 
-        const token  = await this.jwtService.signAsync({ id: user._id });
+        const token = await this.jwtService.signAsync({ id: user._id });
 
         return { message: 'User created', id: user._id, token };
     }
@@ -34,17 +35,16 @@ export class UsersService {
     async getSelfUser(id: string) {
         // TODO: Clean outputs with - & + select strategy
         const user = await this.userModel.findById(id);
+        if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('metaData');
         await user.populate('profile');
-        if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
 
         return user;
     }
 
-
     async updateUser(id: string, updateUserDto: UpdateUserDto) {
 
-        const { name, email, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted , polityAgreement } = updateUserDto
+        const { name, email, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone } = updateUserDto
 
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
@@ -80,8 +80,8 @@ export class UsersService {
         };
 
         if (language) await this.profileModel.updateOne({ _id: user.profile }, { $set: { language } });
-        if(photos) await this.profileModel.updateOne({ _id: user.profile }, { $set: { photos } });
-        if(socialNetworks) await this.profileModel.updateOne({ _id: user.profile }, { $set: { socialNetworks } });
+        if (photos) await this.profileModel.updateOne({ _id: user.profile }, { $set: { photos } });
+        if (socialNetworks) await this.profileModel.updateOne({ _id: user.profile }, { $set: { socialNetworks } });
 
         if (profit) {
             await this.profileModel.updateOne({ _id: user.profile }, {
@@ -95,16 +95,37 @@ export class UsersService {
 
         if (smoking) await this.profileModel.updateOne({ _id: user.profile }, { $set: { smoking } });
 
-        if(onBoardingCompleted) await this.profileModel.updateOne({ _id: user.profile }, { $set: { onBoardingCompleted } });
-        if(polityAgreement) await this.profileModel.updateOne({ _id: user.profile }, { $set: { polityAgreement } });
+        if (onBoardingCompleted) await this.profileModel.updateOne({ _id: user.profile }, { $set: { onBoardingCompleted } });
+        if (polityAgreement) await this.profileModel.updateOne({ _id: user.profile }, { $set: { polityAgreement } });
+
+        if (phone) {
+            await this.profileModel.updateOne({ _id: user.profile }, { $set: { phone } })
+            // TODO: Start Phone Verification.
+        };
 
         return { message: 'User updated', id: user._id };
     }
 
     async findOneForJwtStragety(id: string) {
         const user = await this.userModel.findById(id);
+        if (!user) return null;
         await user.populate('metaData');
         return user;
     }
+
+    async findForLogin(findForLogin: FindForLoginDto) {
+        const { email, password } = findForLogin
+        const user = await this.userModel.findOne({ email })
+        if (user) await user.populate('metaData')
+        // 
+        if (!user || user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with ${email} dont exists` }, HttpStatus.NOT_FOUND)
+        if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with ${email} is suspended` }, HttpStatus.FORBIDDEN)
+        if (!bycrypt.compareSync(password, user.password)) throw new HttpException({ message: `Invalid password` }, HttpStatus.UNAUTHORIZED)
+        const token = await this.jwtService.signAsync({ id: user._id });
+        return { message: `User with ${email} logged in`, id: user._id, token }
+
+    }
+
+
 }
 

@@ -8,8 +8,11 @@ import { QueryFailedFilter } from './Pipes/query-failed-exception.filter';
 import { DatabaseConnectionExceptionFilter } from './Pipes/database-connection-exception.filter.ts';
 import { AuthModule } from './auth/auth.module';
 @Module({
-  imports: [MongooseModule.forRoot(envs.DB_URI), UsersModule, AuthModule],
-  providers:[
+  imports: [
+    MongooseModule.forRoot(envs.DB_URI),
+    AuthModule,
+    UsersModule],
+  providers: [
     {
       provide: APP_PIPE,
       useClass: CustomValidationPipe
@@ -20,8 +23,8 @@ import { AuthModule } from './auth/auth.module';
     },
     {
       provide: APP_FILTER,
-      useClass: QueryFailedFilter ,
+      useClass: QueryFailedFilter,
     },
   ]
 })
-export class AppModule {}
+export class AppModule { }
