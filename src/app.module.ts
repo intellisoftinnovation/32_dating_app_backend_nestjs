@@ -7,11 +7,14 @@ import { CustomValidationPipe } from './Pipes/CustomValidationPipe';
 import { QueryFailedFilter } from './Pipes/query-failed-exception.filter';
 import { DatabaseConnectionExceptionFilter } from './Pipes/database-connection-exception.filter.ts';
 import { AuthModule } from './auth/auth.module';
+import { FilesModule } from './files/files.module';
 @Module({
   imports: [
     MongooseModule.forRoot(envs.DB_URI),
     AuthModule,
-    UsersModule],
+    UsersModule,
+    FilesModule
+  ],
   providers: [
     {
       provide: APP_PIPE,

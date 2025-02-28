@@ -6,7 +6,11 @@ interface Envs {
   DB_URI: string;
   JWTSECRET: string;
   JWTEXPIREIN: string;
-  ERRORLOGS: boolean
+  ERRORLOGS: boolean;
+  CLOUDINARY_NAME: string;
+  CLOUDINARY_KEY: string;
+  CLOUDINARY_SECRET: string;
+
 }
 
 const envSchema = joi
@@ -16,6 +20,9 @@ const envSchema = joi
     JWTSECRET: joi.string().required(),
     JWTEXPIREIN: joi.string().required(),
     ERRORLOGS: joi.boolean().required(),
+    CLOUDINARY_NAME: joi.string().required(),
+    CLOUDINARY_KEY: joi.string().required(),
+    CLOUDINARY_SECRET: joi.string().required(),
   })
   .unknown();
 
@@ -33,4 +40,7 @@ export const envs: Envs = {
   JWTSECRET: value.JWTSECRET,
   JWTEXPIREIN: value.JWTEXPIREIN,
   ERRORLOGS: value.ERRORLOGS,
+  CLOUDINARY_NAME: value.CLOUDINARY_NAME,
+  CLOUDINARY_KEY: value.CLOUDINARY_KEY, 
+  CLOUDINARY_SECRET: value.CLOUDINARY_SECRET,
 };

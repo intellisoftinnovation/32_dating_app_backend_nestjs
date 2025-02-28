@@ -11,8 +11,8 @@ export class CustomValidationPipe extends ValidationPipe {
       exceptionFactory: (errors: ValidationError[]) => {
         const errorMessages = errors.map(error => {
           const constraints = error.constraints;
-          const property = error.property;
-          const paths = error.property.split('.');
+          const property = error.property || "";
+          const paths = property.split('.');
           return {
             property,
             paths,
@@ -28,8 +28,8 @@ export class CustomValidationPipe extends ValidationPipe {
   transformException(errors: ValidationError[]) {
     const errorMessages = errors.map(error => {
       const constraints = error.constraints;
-      const property = error.property;
-      const paths = error.property.split('.');
+      const property = error.property || "";
+      const paths = property.split('.');
       return {
         property,
         paths,
