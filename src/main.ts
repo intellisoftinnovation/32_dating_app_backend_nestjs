@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { envs } from './config';
 
 async function main() {
-  const prefix = `api` ; 
+  const prefix = `api`;
   const version = `0.0.1`;
   const logger = new Logger('Chomy-Api');
   const app = await NestFactory.create(AppModule);
@@ -20,6 +20,11 @@ async function main() {
     .setTitle('Chomy - Api')
     .setDescription('Chomy - Api Documentation')
     .setVersion('0.0.1')
+    .addApiKey({
+      type: 'apiKey',
+      name: 'token',
+      in: 'header', 
+    }, 'token')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(`${prefix}/${version}/docs`, app, document);

@@ -7,13 +7,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { MetaData } from './schemas/meta-data.schema';
 import { Profile } from './schemas/profile.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(MetaData.name) private readonly metaDataModel: Model<MetaData>,
-        @InjectModel(Profile.name) private readonly profileModel: Model<Profile>
+        @InjectModel(Profile.name) private readonly profileModel: Model<Profile>,
+        private readonly jwtService: JwtService
     ) { }
 
     async createUser(createUserDto: CreateUserDto) {
@@ -24,7 +26,9 @@ export class UsersService {
 
         await this.userModel.findByIdAndUpdate(user._id, { metaData: metaData._id, profile: profile._id });
 
-        return { message: 'User created', id: user._id, token: "3DA-10" };
+        const token  = await this.jwtService.signAsync({ id: user._id });
+
+        return { message: 'User created', id: user._id, token };
     }
 
     async getSelfUser(id: string) {
@@ -95,6 +99,12 @@ export class UsersService {
         if(polityAgreement) await this.profileModel.updateOne({ _id: user.profile }, { $set: { polityAgreement } });
 
         return { message: 'User updated', id: user._id };
+    }
+
+    async findOneForJwtStragety(id: string) {
+        const user = await this.userModel.findById(id);
+        await user.populate('metaData');
+        return user;
     }
 }
 

@@ -1,21 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
+import { ItPrivileges as  Privileges } from '../../auth/interfaces/ItPrivileges';
+
 export type MetaDataDocument = HydratedDocument<MetaData>;
 
 export enum AccountStatus {
     ACTIVE = 'ACTIVE',
-    INACTIVE = 'SUSPENDED',
+    SUSPENDED = 'SUSPENDED',
+    DELETED = 'DELETED',
 }
 
 export enum UserRole {
     ADMIN = 'ADMIN',
     USER = 'USER',
-}
-
-export enum Privileges {
-    DEFAULT = 'DEFAULT',
-    // TODO: Create privilege about security strategy
 }
 
 

@@ -2,14 +2,13 @@ import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { NewRegisterDto } from './dto/new-register-dto';
 import { ApiResponse } from '@nestjs/swagger';
-
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
   login() {
-    return "login";
+      
   }
 
   @Post('register')

@@ -91,6 +91,8 @@ export class Profile {
     @Prop({ type: Profit, default: () => new Profit() })
     profit: Profit;
 
+    // FIXME: Add Phone Number
+
     @Prop({ type: Boolean, default: false, required: true })
     phoneVerified: boolean;
 
