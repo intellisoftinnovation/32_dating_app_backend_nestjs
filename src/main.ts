@@ -28,7 +28,7 @@ async function main() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(`${prefix}/${version}/docs`, app, document);
-  await app.listen(3000);
+  await app.listen(envs.PORT);
   logger.log(`Chomy-Api is listening on port ${envs.PORT}`);
 }
 main();
