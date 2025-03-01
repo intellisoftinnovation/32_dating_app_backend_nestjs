@@ -106,6 +106,7 @@ export class UsersService {
         return { message: 'User updated', id: user._id };
     }
 
+
     async findOneForJwtStragety(id: string) {
         const user = await this.userModel.findById(id);
         if (!user) return null;
@@ -124,6 +125,14 @@ export class UsersService {
         const token = await this.jwtService.signAsync({ id: user._id });
         return { message: `User with ${email} logged in`, id: user._id, token }
 
+    }
+
+    async verifyGender(id: string) {
+        const user = await this.userModel.findById(id);
+        if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
+        await user.populate('profile');
+        await this.profileModel.findByIdAndUpdate(user.profile, { $set: { genderVerified: true } });
+        return true ; 
     }
 
 

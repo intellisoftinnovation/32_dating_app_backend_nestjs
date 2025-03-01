@@ -8,12 +8,14 @@ import { QueryFailedFilter } from './Pipes/query-failed-exception.filter';
 import { DatabaseConnectionExceptionFilter } from './Pipes/database-connection-exception.filter.ts';
 import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
+import { KycModule } from './kyc/kyc.module';
 @Module({
   imports: [
     MongooseModule.forRoot(envs.DB_URI),
     AuthModule,
     UsersModule,
-    FilesModule
+    FilesModule,
+    KycModule
   ],
   providers: [
     {

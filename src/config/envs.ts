@@ -10,6 +10,8 @@ interface Envs {
   CLOUDINARY_NAME: string;
   CLOUDINARY_KEY: string;
   CLOUDINARY_SECRET: string;
+  FACEPLUS_KEY: string;
+  FACEPLUS_SECRET: string;
 
 }
 
@@ -23,6 +25,8 @@ const envSchema = joi
     CLOUDINARY_NAME: joi.string().required(),
     CLOUDINARY_KEY: joi.string().required(),
     CLOUDINARY_SECRET: joi.string().required(),
+    FACEPLUS_KEY: joi.string().required(),
+    FACEPLUS_SECRET: joi.string().required(),
   })
   .unknown();
 
@@ -43,4 +47,6 @@ export const envs: Envs = {
   CLOUDINARY_NAME: value.CLOUDINARY_NAME,
   CLOUDINARY_KEY: value.CLOUDINARY_KEY, 
   CLOUDINARY_SECRET: value.CLOUDINARY_SECRET,
+  FACEPLUS_KEY: value.FACEPLUS_KEY,
+  FACEPLUS_SECRET: value.FACEPLUS_SECRET,
 };
