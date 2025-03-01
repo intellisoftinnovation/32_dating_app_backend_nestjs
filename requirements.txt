@@ -1,0 +1,4 @@
+flask
+deepface
+requests
+opencv-python-headless

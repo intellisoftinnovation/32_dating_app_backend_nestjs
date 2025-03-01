@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  deepface-api:
+    build: .
+    container_name: deepface_service
+    ports:
+      - "5000:5000"  
+    restart: unless-stopped  # Reinicia el contenedor si falla
