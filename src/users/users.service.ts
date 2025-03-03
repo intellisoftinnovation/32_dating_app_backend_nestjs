@@ -103,8 +103,9 @@ export class UsersService {
         if (polityAgreement) await this.profileModel.updateOne({ _id: user.profile }, { $set: { polityAgreement } });
 
         if (phone) {
-            await this.profileModel.updateOne({ _id: user.profile }, { $set: { phone } })
-            // TODO: Start Phone Verification.
+            const phoneInUse = await this.profileModel.findOne({ phone })
+            if (phoneInUse) throw new HttpException({ message: `Phone ${phone} already in use` }, HttpStatus.PRECONDITION_FAILED)
+            await this.profileModel.updateOne({ _id: user.profile }, { $set: { phone, phoneVerified: false } })
         };
 
         return { message: 'User updated', id: user._id };
@@ -136,6 +137,14 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('profile');
         await this.profileModel.findByIdAndUpdate(user.profile, { $set: { genderVerified: true } });
+        return true;
+    }
+
+    async verifyPhone(id: string) {
+        const user = await this.userModel.findById(id);
+        if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
+        await user.populate('profile');
+        await this.profileModel.findByIdAndUpdate(user.profile, { $set: { phoneVerified: true } });
         return true;
     }
 

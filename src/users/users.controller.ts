@@ -36,6 +36,7 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid id' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User with provided id dont exist' })
   @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Email already in use' })
+  @ApiResponse({ status: HttpStatus.PRECONDITION_FAILED, description: 'Phone already in use' })
   async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @GetUser() user: UserDocument) {
     if(id!=user._id.toString() && !user.metaData.privileges.includes(ItPrivileges.ALL_PRIVILEGES)) throw new HttpException({message:'You do not have permissions to edit other users', details: `You need one of the following privileges: ${ItPrivileges.ALL_PRIVILEGES}`}, HttpStatus.FORBIDDEN );
 

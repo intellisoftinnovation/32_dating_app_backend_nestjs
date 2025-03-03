@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpException, HttpStatus, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { KycService } from './kyc.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
@@ -7,6 +7,7 @@ import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterImg } from 'src/files/helpers/fileFilters.helpers';
 import { FacePlusVerifyCode } from './helpers/face-plus-gender-verify';
+import { PhoneVerifyDto } from './dto/phone-verify.dto';
 
 
 @Controller('kyc')
@@ -58,6 +59,19 @@ export class KycController {
     // TODO: Add file size validation
 
     return this.kycService.genderVerify(file, user);
+  }
+
+  @Get('phoneVerify')
+  @Auth()
+  async phoneVerifyRequest(@GetUser() user: UserDocument) {
+    return this.kycService.phoneVerifyRequest(user);
+  }
+
+  @Post('phoneVerify')
+  @Auth()
+  @HttpCode(HttpStatus.OK)
+  async phoneVerify(@GetUser() user: UserDocument, @Body() phoneVerifyDto: PhoneVerifyDto) {
+    return this.kycService.phoneVerify(user, phoneVerifyDto.code);
   }
 
 

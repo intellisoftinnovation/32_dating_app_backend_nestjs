@@ -90,7 +90,7 @@ export class Profile {
     @Prop({ type: Profit, default: () => new Profit() })
     profit: Profit;
 
-    @Prop({ type: String ,default: "+51555555555", required: true })
+    @Prop({ type: String})
     phone: string; 
 
     @Prop({ type: Boolean, default: false, required: true })

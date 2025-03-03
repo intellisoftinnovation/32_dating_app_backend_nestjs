@@ -1,8 +1,11 @@
-import { forwardRef,  Inject, Injectable } from '@nestjs/common';
+import { forwardRef,  HttpException,  HttpStatus,  Inject, Injectable } from '@nestjs/common';
 import { FilesService } from 'src/files/files.service';
 import { UserDocument } from 'src/users/schemas/user.schema';
 import { UsersService } from 'src/users/users.service';
 import { facePlusGenderVerify, FacePlusVerifyCode } from './helpers/face-plus-gender-verify';
+import { generateOTP, verifyOTP } from '../helpers/speakeasy-otp';
+import { sendSMS } from 'src/helpers/send-sms';
+import { envs } from 'src/config';
 
 
 @Injectable()
@@ -33,5 +36,41 @@ export class KycService {
                 console.log({code, details })
                 return { message: 'Try again later', code, details, verified };
         }
+    }
+
+    async phoneVerifyRequest(user: UserDocument) {
+        const tempUser = await this.usersService.getSelfUser(user._id.toString())
+        const phone = tempUser.profile.phone
+        
+        if (!phone) {
+            throw new HttpException({ message: 'Phone not found' }, HttpStatus.PRECONDITION_FAILED);
+        }
+
+        const totp = generateOTP({ phone })
+
+        const {send_status} = await sendSMS(phone, ` ${totp} es su código de verificación de Chamoy`)
+
+        if(envs.ERRORLOGS) console.log(send_status)
+
+        return {message: "Código enviado"}
+    }
+
+    async phoneVerify(user: UserDocument, code: string) {
+        const tempUser = await this.usersService.getSelfUser(user._id.toString())
+        const phone = tempUser.profile.phone
+
+        if (!phone) {
+            throw new HttpException({ message: 'Phone not found' }, HttpStatus.PRECONDITION_FAILED);
+        }
+
+        const isValid = verifyOTP({ phone }, code)
+
+        if (!isValid) {
+            return { message: 'Invalid code', verified: false  };
+        }
+
+        await this.usersService.verifyPhone(user._id.toString())
+
+        return { message: 'Phone verified', verified: true};
     }
 }
