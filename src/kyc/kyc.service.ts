@@ -28,7 +28,7 @@ export class KycService {
             case FacePlusVerifyCode.MULTIPLE_FACES:
                 return { message: 'Multiple faces', code ,verified };
             case FacePlusVerifyCode.GENDER_MISMATCH:
-                return { message: 'Gender mismatch', code };
+                return { message: 'Gender mismatch', code, verified };
             case FacePlusVerifyCode.TRY_AGAIN_LATER:
                 console.log({code, details })
                 return { message: 'Try again later', code, details, verified };

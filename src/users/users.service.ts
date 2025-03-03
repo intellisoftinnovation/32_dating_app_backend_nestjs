@@ -66,7 +66,11 @@ export class UsersService {
         if (bodyType) await this.profileModel.updateOne({ _id: user.profile }, { $set: { bodyType } });
         if (description) await this.profileModel.updateOne({ _id: user.profile }, { $set: { description } });
         if (familySituation) await this.profileModel.updateOne({ _id: user.profile }, { $set: { familySituation } });
-        if (gender) await this.profileModel.updateOne({ _id: user.profile }, { $set: { gender } });
+
+        if (gender) {
+            await this.profileModel.updateOne({ _id: user.profile }, { $set: { gender, genderVerified: false } });
+        }
+
 
         if (geoLocation) {
             await this.profileModel.updateOne({ _id: user.profile }, {
@@ -132,7 +136,7 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('profile');
         await this.profileModel.findByIdAndUpdate(user.profile, { $set: { genderVerified: true } });
-        return true ; 
+        return true;
     }
 
 

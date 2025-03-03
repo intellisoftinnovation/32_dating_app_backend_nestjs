@@ -6,6 +6,8 @@ import { UserDocument } from 'src/users/schemas/user.schema';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterImg } from 'src/files/helpers/fileFilters.helpers';
+import { FacePlusVerifyCode } from './helpers/face-plus-gender-verify';
+
 
 @Controller('kyc')
 export class KycController {
@@ -21,7 +23,7 @@ export class KycController {
   @ApiResponse({ status: 412, description: 'Precondition failed, read error_flag' })
   @ApiResponse({
     status: 503,
-    description: 'File upload failed, contact the developer'
+    description: 'File upload failed, contact the developer',
   })
   @ApiBody({
     schema: {
@@ -35,6 +37,14 @@ export class KycController {
     },
   })
   @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 200,
+    example: {
+      message: 'Gender mismatch',
+      code: FacePlusVerifyCode.GENDER_MISMATCH,
+      verified: false
+    }
+  })
   async genderVerify(@UploadedFile() file: Express.Multer.File, @Req() req: Express.Request, @GetUser() user: UserDocument) {
 
     if (req.errors) {

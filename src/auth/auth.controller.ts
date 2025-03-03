@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { NewRegisterDto } from './dto/new-register-dto';
 import { ApiResponse } from '@nestjs/swagger';
@@ -8,6 +8,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: HttpStatus.OK })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Invalid credentials' })
