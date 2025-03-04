@@ -44,13 +44,15 @@ export class UsersService {
 
     async updateUser(id: string, updateUserDto: UpdateUserDto) {
 
-        const { name, email, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone } = updateUserDto
+        const { name, email,  englishLevel , etnicidad ,  password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone } = updateUserDto
 
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
 
         await user.populate('metaData');
         await user.populate('profile');
+
+        if(!Object.keys(updateUserDto).length) throw new HttpException({ message: `Nothing to update`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.BAD_GATEWAY);
 
         if (name) await this.userModel.updateOne({ _id: user._id }, { $set: { name } });
         if (email) await this.userModel.updateOne({ _id: user._id }, { $set: { email } });
@@ -107,6 +109,9 @@ export class UsersService {
             if (phoneInUse) throw new HttpException({ message: `Phone ${phone} already in use` }, HttpStatus.PRECONDITION_FAILED)
             await this.profileModel.updateOne({ _id: user.profile }, { $set: { phone, phoneVerified: false } })
         };
+
+        if (etnicidad) await this.profileModel.updateOne({ _id: user.profile }, { $set: { etnicidad } });
+        if (englishLevel) await this.profileModel.updateOne({ _id: user.profile }, { $set: { englishLevel } });
 
         return { message: 'User updated', id: user._id };
     }

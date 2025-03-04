@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Appearance, BodyType, FamilySituation, Gender, Language } from '../schemas/profile.schema';
+import { Appearance, BodyType, englishLevel, Etnicidad, FamilySituation, Gender, Language } from '../schemas/profile.schema';
 import { SocialNetworks } from '../schemas/social-network.schema';
 import { Transform, Type } from 'class-transformer';
 import { Currency } from '../schemas/profit.schema';
@@ -97,6 +97,17 @@ export class UpdateUserDto {
     @ApiProperty({ enum: Appearance })
     appearance?: Appearance
 
+    @IsNotEmpty()
+    @IsOptional()
+    @IsEnum(Etnicidad)
+    @ApiProperty({ enum: Etnicidad })
+    etnicidad?: Etnicidad
+
+    @IsNotEmpty()
+    @IsOptional()
+    @IsEnum(englishLevel)
+    @ApiProperty({ enum: englishLevel })
+    englishLevel?: englishLevel
 
     @IsNotEmpty()
     @IsOptional()

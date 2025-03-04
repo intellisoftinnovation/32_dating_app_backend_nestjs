@@ -35,6 +35,22 @@ export enum TypeOfRelationFind {
     FWB = "FWB",
 }
 
+export enum Etnicidad{
+    AFRO      = "AFRO",
+    AMERICANO = "AMERICANO",
+    ASIATICO  = "ASIATICO",
+    MESTIZO   = "MESTIZO",
+    LATINO    = "LATINO",
+    BLANCO    = "BLANCO"
+}
+
+export enum englishLevel {
+    MALO  = "MALO",
+    MEDIO = "MEDIO",
+    BUENO = "ALTO",
+    FLUIDO = "FLUIDO",
+}
+
 export enum Language {
     ENGLISH = "ENGLISH",
     SPANISH = "SPANISH",
@@ -56,6 +72,12 @@ export class Profile {
 
     @Prop({ type: String, enum: Object.values(Appearance), default: Appearance.AVERAGE })
     appearance: Appearance
+
+    @Prop({Type: String, enum: Object.values(Etnicidad), default: Etnicidad.BLANCO})
+    etnicidad: Etnicidad;
+
+    @Prop({ type: String, enum: Object.values(englishLevel), default: englishLevel.MEDIO })
+    englishLevel: englishLevel;
 
     @Prop({ type: Date, default: () => new Date() })
     birthdate: Date;
