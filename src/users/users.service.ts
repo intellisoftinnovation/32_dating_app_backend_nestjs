@@ -148,6 +148,27 @@ export class UsersService {
         return true;
     }
 
+    async findForPassRecovery(email: string) {
+        const user = await this.userModel.findOne({ email })
+        if (!user) throw new HttpException({ message: `User with ${email} dont exists` }, HttpStatus.NOT_FOUND)
+        await user.populate('metaData')
+        await user.populate('profile')
+        if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with ${email} was deleted` }, HttpStatus.NOT_FOUND)
+        if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with ${email} is suspended` }, HttpStatus.FORBIDDEN)
+
+        return user
+    }
+
+    async getUserById(id: string) {
+        const user = await this.userModel.findOne({ _id: id })
+        if (!user) throw new HttpException({ message: `User with ${id} dont exists` }, HttpStatus.NOT_FOUND)
+        await user.populate('metaData')
+        await user.populate('profile')
+        if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with ${id} was deleted` }, HttpStatus.NOT_FOUND) 
+        if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with ${id} is suspended` }, HttpStatus.FORBIDDEN)
+        return user
+    }   
+
 
 }
 

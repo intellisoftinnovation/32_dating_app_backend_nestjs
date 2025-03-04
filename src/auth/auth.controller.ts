@@ -3,6 +3,8 @@ import { AuthService } from './auth.service';
 import { NewRegisterDto } from './dto/new-register-dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/find-for-login.dto';
+import { WantPassRecoveryDto } from './dto/want-pass-recovery.dto';
+import { OtpPassRecoveryDto } from './dto/otp-pass-recovery.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -25,4 +27,26 @@ export class AuthController {
   register(@Body() newRegisterDto: NewRegisterDto) {
     return this.authService.register(newRegisterDto);
   }
+
+  @Post('wantpassrecovery')
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'User with email not found',
+  })
+  @ApiResponse({
+    status: HttpStatus.PRECONDITION_FAILED,
+    description: 'User with email dont have phone',
+  })
+  wantPassRecovery(@Body() wantpassrecoverydto: WantPassRecoveryDto) {
+    return this.authService.wantPassRecovery(wantpassrecoverydto);
+  }
+
+  @Post('otppassrecovery')
+  otpPassRecovery(@Body() otpPassRecoveryDto: OtpPassRecoveryDto) {
+    return this.authService.otpPassRecovery(otpPassRecoveryDto);
+  }
+
+
+
 }
