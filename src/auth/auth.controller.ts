@@ -50,6 +50,7 @@ export class AuthController {
   }
 
   @Post('otppassrecovery')
+  @HttpCode(HttpStatus.OK)
   otpPassRecovery(@Body() otpPassRecoveryDto: OtpPassRecoveryDto) {
     return this.authService.otpPassRecovery(otpPassRecoveryDto);
   }
