@@ -9,6 +9,7 @@ import { envs } from 'src/config';
 import { EncryptionService } from 'src/tools/AES';
 import { OtpPassRecoveryDto } from './dto/otp-pass-recovery.dto';
 import { JwtService } from '@nestjs/jwt';
+import { ConfirmPassRecoveryDto } from './dto/confir-pass-recovery.dto';
 
 @Injectable()
 export class AuthService {
@@ -31,16 +32,27 @@ export class AuthService {
         const user = await this.usersService.findForPassRecovery(email)
         if (!user.profile.phone) throw new HttpException({ message: 'Phone not found' }, HttpStatus.PRECONDITION_FAILED);
 
+
+
+        const path = EncryptionService.encrypt(user._id.toString());
+
+        if (envs.ERRORLOGS) console.log(path, user._id.toString(), EncryptionService.decrypt(path))
+        return { message: "Account found", phone: user.profile.phone, path }
+    }
+
+    async confirmPassRecovery(confirmPassRecovery: ConfirmPassRecoveryDto) {
+        const { path } = confirmPassRecovery
+
+        const user_id = EncryptionService.decrypt(path);
+        const user = await this.usersService.getUserById(user_id);
+
         const totp = generateOTP({ phone: user.profile.phone, password: user.password })
 
         const { send_status } = await sendSMS(user.profile.phone, ` ${totp} es su código de verificación de Chamoy`)
 
         if (envs.ERRORLOGS) console.log(send_status)
 
-        const path = EncryptionService.encrypt(user._id.toString());
-
-        console.log(path, user._id.toString(), EncryptionService.decrypt(path))
-        return { message: "Código enviado", phone: user.profile.phone, path }
+        return { message: "Código enviado"}
     }
 
     async otpPassRecovery(otpPassRecoveryDto: OtpPassRecoveryDto) {
@@ -52,6 +64,6 @@ export class AuthService {
         if (!isValid) throw new HttpException({ message: 'Código inválido' }, HttpStatus.FORBIDDEN)
 
         const token = await this.jwtService.signAsync({ id: user._id });
-        return { message: `Código válido`, token: token , id: user._id };
+        return { message: `Código válido`, token: token, id: user._id };
     }
 }

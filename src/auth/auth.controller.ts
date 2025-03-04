@@ -5,6 +5,7 @@ import { ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/find-for-login.dto';
 import { WantPassRecoveryDto } from './dto/want-pass-recovery.dto';
 import { OtpPassRecoveryDto } from './dto/otp-pass-recovery.dto';
+import { ConfirmPassRecoveryDto } from './dto/confir-pass-recovery.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -40,6 +41,12 @@ export class AuthController {
   })
   wantPassRecovery(@Body() wantpassrecoverydto: WantPassRecoveryDto) {
     return this.authService.wantPassRecovery(wantpassrecoverydto);
+  }
+
+  @Post('confirmpassrecovery')
+  @HttpCode(HttpStatus.OK)
+  confirmPassRecovery(@Body() confirmPassRecoveryDto: ConfirmPassRecoveryDto) {
+    return this.authService.confirmPassRecovery(confirmPassRecoveryDto);
   }
 
   @Post('otppassrecovery')
