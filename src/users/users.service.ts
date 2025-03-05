@@ -9,6 +9,8 @@ import { Profile } from './schemas/profile.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { FindForLoginDto } from './dto/find-for-login.dto';
+import { Preference } from './schemas/preferences-schema';
+import { UpdatePreferenceDto } from './dto/update-preferences.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +18,7 @@ export class UsersService {
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(MetaData.name) private readonly metaDataModel: Model<MetaData>,
         @InjectModel(Profile.name) private readonly profileModel: Model<Profile>,
+        @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
         private readonly jwtService: JwtService
     ) { }
 
@@ -44,7 +47,7 @@ export class UsersService {
 
     async updateUser(id: string, updateUserDto: UpdateUserDto) {
 
-        const { name, email,  englishLevel , etnicidad ,  password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone } = updateUserDto
+        const { name, email, englishLevel, etnicidad, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone } = updateUserDto
 
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
@@ -52,7 +55,7 @@ export class UsersService {
         await user.populate('metaData');
         await user.populate('profile');
 
-        if(!Object.keys(updateUserDto).length) throw new HttpException({ message: `Nothing to update`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.BAD_GATEWAY);
+        if (!Object.keys(updateUserDto).length) throw new HttpException({ message: `Nothing to update`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.BAD_GATEWAY);
 
         if (name) await this.userModel.updateOne({ _id: user._id }, { $set: { name } });
         if (email) await this.userModel.updateOne({ _id: user._id }, { $set: { email } });
@@ -169,11 +172,52 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User with ${id} dont exists` }, HttpStatus.NOT_FOUND)
         await user.populate('metaData')
         await user.populate('profile')
-        if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with ${id} was deleted` }, HttpStatus.NOT_FOUND) 
+        if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with ${id} was deleted` }, HttpStatus.NOT_FOUND)
         if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with ${id} is suspended` }, HttpStatus.FORBIDDEN)
         return user
-    }   
+    }
 
+    async getSelfPreferences(id: string) {
+        let user = await this.userModel.findById(id);
+        if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
+        await user.populate('preference');
+        if (!user.preference) {
+            const tempPreferences = await this.preferenceModel.create({ userId: user._id });
+            await this.userModel.findByIdAndUpdate(user._id, { preference: tempPreferences._id })
+            user = await this.userModel.findById(id);
+            await user.populate('preference')
+        }
+        return user.preference;
+    }
 
+    async updateSelfPreferences(id: string, updatePreferenceDto: UpdatePreferenceDto) {
+        if (!Object.keys(updatePreferenceDto).length) throw new HttpException({ message: `Nothing to update` }, HttpStatus.BAD_REQUEST);
+        const { ageRange, altura, appearance, bodyType, distance, englishLevel, etnicidad, familySituation, language, smoking } = updatePreferenceDto;
+        let user = await this.userModel.findById(id);
+
+        if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
+        await user.populate('preference');
+        if (!user.preference) {
+            const tempPreferences = await this.preferenceModel.create({ userId: user._id });
+            await this.userModel.findByIdAndUpdate(user._id, { preference: tempPreferences._id })
+            user = await this.userModel.findById(id);
+            await user.populate('preference')
+        }
+
+        if (ageRange) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { ageRange } });
+        if (altura) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { altura } });
+        if (appearance) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { appearance } });
+        if (bodyType) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { bodyType } });
+        if (distance) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { distance } });
+        if (englishLevel) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { englishLevel } });
+        if (etnicidad) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { etnicidad } });
+        if (familySituation) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { familySituation } });
+        if (language) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { language } });
+        if (smoking) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { smoking } });
+
+        await user.populate('preference', '-_id -__v')
+
+        return { message: `Preferences updated`, preference: user.preference };
+    }
 }
 

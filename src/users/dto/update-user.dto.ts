@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Appearance, BodyType, englishLevel, Etnicidad, FamilySituation, Gender, Language } from '../schemas/profile.schema';
+import { Appearance, BodyType,  EnglishLevel,  Etnicidad, FamilySituation, Gender, Language } from '../schemas/profile.schema';
 import { SocialNetworks } from '../schemas/social-network.schema';
 import { Transform, Type } from 'class-transformer';
 import { Currency } from '../schemas/profit.schema';
@@ -65,51 +65,43 @@ export class ProfitDto {
 
 
 export class UpdateUserDto {
-    @IsNotEmpty()
     @IsString()
     @IsOptional()
     @ApiProperty()
     name?: string
 
-    @IsNotEmpty()
     @IsString()
     @IsOptional()
     @IsEmail()
     @ApiProperty()
     email?: string
 
-    @IsNotEmpty()
     @IsString()
     @IsOptional()
     // TODO: Add password regex
     @ApiProperty()
     password?: string
 
-    @IsNotEmpty()
     @IsString()
     @IsOptional()
     @ApiProperty()
     description?: string
 
-    @IsNotEmpty()
     @IsOptional()
     @IsEnum(Appearance)
     @ApiProperty({ enum: Appearance })
     appearance?: Appearance
 
-    @IsNotEmpty()
     @IsOptional()
     @IsEnum(Etnicidad)
     @ApiProperty({ enum: Etnicidad })
     etnicidad?: Etnicidad
 
-    @IsNotEmpty()
     @IsOptional()
-    @IsEnum(englishLevel)
-    @ApiProperty({ enum: englishLevel })
-    englishLevel?: englishLevel
+    @IsEnum(EnglishLevel)
+    @ApiProperty({ enum: EnglishLevel })
+    englishLevel?: EnglishLevel
 
-    @IsNotEmpty()
     @IsOptional()
     @IsDate()
     @Transform(({ value }) => new Date(value))
@@ -117,7 +109,6 @@ export class UpdateUserDto {
     birthdate?: Date
 
 
-    @IsNotEmpty()
     @IsOptional()
     @IsEnum(Gender)
     @ApiProperty({ enum: Gender })

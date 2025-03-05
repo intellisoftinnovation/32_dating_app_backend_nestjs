@@ -17,8 +17,8 @@ async function main() {
   app.setGlobalPrefix(`${prefix}/${version}`);
 
   const config = new DocumentBuilder()
-    .setTitle('Chomy - Api')
-    .setDescription('Chomy - Api Documentation')
+    .setTitle('Chamoy - Api')
+    .setDescription('Chamoy - Api Documentation')
     .setVersion('0.0.1')
     .addApiKey({
       type: 'apiKey',
@@ -29,6 +29,6 @@ async function main() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(`${prefix}/${version}/docs`, app, document);
   await app.listen(envs.PORT);
-  logger.log(`Chomy-Api is listening on port ${envs.PORT}`);
+  logger.log(`Chamoy-Api is listening on port ${envs.PORT}`);
 }
 main();

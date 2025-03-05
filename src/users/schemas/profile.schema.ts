@@ -44,7 +44,7 @@ export enum Etnicidad{
     BLANCO    = "BLANCO"
 }
 
-export enum englishLevel {
+export enum EnglishLevel {
     MALO  = "MALO",
     MEDIO = "MEDIO",
     BUENO = "ALTO",
@@ -76,8 +76,8 @@ export class Profile {
     @Prop({Type: String, enum: Object.values(Etnicidad), default: Etnicidad.BLANCO})
     etnicidad: Etnicidad;
 
-    @Prop({ type: String, enum: Object.values(englishLevel), default: englishLevel.MEDIO })
-    englishLevel: englishLevel;
+    @Prop({ type: String, enum: Object.values(EnglishLevel), default: EnglishLevel.MEDIO })
+    englishLevel: EnglishLevel;
 
     @Prop({ type: Date, default: () => new Date() })
     birthdate: Date;
@@ -85,6 +85,7 @@ export class Profile {
     @Prop({ type: String, enum: Object.values(Gender), default: Gender.MALE, required: true })
     gender: Gender;
 
+    //TODO:  Limitar a 6 Fotos
     @Prop({ type: [String], required: true, default: [] })
     photos: string[];
 
@@ -124,13 +125,10 @@ export class Profile {
     @Prop({ type: Boolean, default: false, required: true })
     polityAgreement: boolean;
 
-
     @Prop({ type: Boolean, default: false, required: true })
     onBoardingCompleted: boolean;
 
 }
-
-
 
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);

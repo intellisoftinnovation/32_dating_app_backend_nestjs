@@ -3,6 +3,7 @@ import mongoose, {HydratedDocument} from 'mongoose';
 
 import { MetaData } from './meta-data.schema';
 import { Profile } from './profile.schema';
+import { Preference } from './preferences-schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -22,6 +23,9 @@ export class User {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'Profile'  })
   profile: Profile
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'Preference'})
+  preference: Preference;
   
 }
 
