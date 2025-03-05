@@ -43,6 +43,11 @@ export class UsersController {
     return await this.usersService.updateUser(id, updateUserDto);
   }
 
+  @Post("seed")
+  async seedUser(){
+    return await this.usersService.seedUsers(); 
+  }
+
 
 
 }

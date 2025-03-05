@@ -11,6 +11,9 @@ import { JwtService } from '@nestjs/jwt';
 import { FindForLoginDto } from './dto/find-for-login.dto';
 import { Preference } from './schemas/preferences-schema';
 import { UpdatePreferenceDto } from './dto/update-preferences.dto';
+import { getRandomUsers } from './seed/seed.users';
+
+
 
 @Injectable()
 export class UsersService {
@@ -218,6 +221,33 @@ export class UsersService {
         await user.populate('preference', '-_id -__v')
 
         return { message: `Preferences updated`, preference: user.preference };
+    }
+
+
+    async seedUsers() {
+        let success = 0, error = 0;
+        const errors = []
+        const seedUsers = getRandomUsers(15)        
+        for (let i = 0; i < seedUsers.length; i++) {
+            const user = seedUsers[i]
+            try {
+                const { email, name, password, metaData, preference, profile } = user
+                const tempUser = await this.userModel.create({ email, name, password })
+                const tempMetadata = await this.metaDataModel.create({ userId: tempUser._id, ...metaData })
+                const tempProfile = await this.profileModel.create({ userId: tempUser._id, ...profile })
+                await this.userModel.findByIdAndUpdate(tempUser._id, { metaData: tempMetadata._id, profile: tempProfile._id })
+                if (preference) {
+                    const tempPreferences = await this.preferenceModel.create({ userId: tempUser._id, ...preference })
+                    await this.userModel.findByIdAndUpdate(tempUser._id, { preference: tempPreferences._id })
+                }
+                success++
+            } catch (e) {
+                error++
+                errors.push(e)
+            }
+        }
+
+        return { message: "Seed finished", result: { success, error, errors } }
     }
 }
 
