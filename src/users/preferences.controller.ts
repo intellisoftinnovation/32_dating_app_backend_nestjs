@@ -21,6 +21,29 @@ export class PreferencesController {
     return await this.usersService.updateSelfPreferences(idInToken, updatePreferenceDto);
   }
 
+  @Patch('reset')
+  @Auth()
+  async ResetSelfPreferences(@GetUser('_id') idInToken: string) {
+    return await this.usersService.updateSelfPreferences(idInToken, {
+      ageRange:{
+        min: 18, 
+        max: 55, 
+      },
+      altura: {
+        min: 150, 
+        max: 250, 
+      },
+      appearance: [],
+      bodyType:[],
+      distance: 2500,
+      englishLevel: [],
+      etnicidad: [],
+      familySituation: [],
+      language: [],
+      smoking: [],
+    });
+  }
+
 
 }
 

@@ -185,7 +185,7 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('preference');
         if (!user.preference) {
-            const tempPreferences = await this.preferenceModel.create({ userId: user._id });
+            const tempPreferences = await this.preferenceModel.create({ userId: user._id , ageRange:{min:18 , max:55}, altura:{min: 150, max: 200}  });
             await this.userModel.findByIdAndUpdate(user._id, { preference: tempPreferences._id })
             user = await this.userModel.findById(id);
             await user.populate('preference')
@@ -201,7 +201,7 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
         await user.populate('preference');
         if (!user.preference) {
-            const tempPreferences = await this.preferenceModel.create({ userId: user._id });
+            const tempPreferences = await this.preferenceModel.create({ userId: user._id, ageRange:{min:18 , max:55}, altura:{min: 150, max: 200} });
             await this.userModel.findByIdAndUpdate(user._id, { preference: tempPreferences._id })
             user = await this.userModel.findById(id);
             await user.populate('preference')
