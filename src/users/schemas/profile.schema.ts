@@ -64,6 +64,8 @@ export enum FamilySituation {
     FOOUR_OR_MORE = "FOUR_OR_MORE",
 }
 
+
+
 @Schema()
 export class Profile {
 
@@ -81,6 +83,8 @@ export class Profile {
 
     @Prop({ type: Date, default: () => new Date() })
     birthdate: Date;
+
+
 
     @Prop({ type: String, enum: Object.values(Gender), default: Gender.MALE, required: true })
     gender: Gender;
@@ -104,11 +108,16 @@ export class Profile {
     @Prop({ type: Boolean, default: false })
     smoking: boolean;
 
+    @Prop({ type: String , enum: Object.values(TypeOfRelationFind), default: TypeOfRelationFind.FRIENDSHIP })
+    typeOfRelationFind: TypeOfRelationFind;
+
     @Prop({ type: String, enum: Object.values(Language), default: Language.SPANISH })
     language: Language;
 
     @Prop({ type: String, enum: Object.values(FamilySituation), default: FamilySituation.NO_CHILDREN })
     familySituation: FamilySituation;
+
+    
 
     @Prop({ type: Profit, default: () => new Profit() })
     profit: Profit;
@@ -127,6 +136,9 @@ export class Profile {
 
     @Prop({ type: Boolean, default: false, required: true })
     onBoardingCompleted: boolean;
+
+    @Prop({type: Number, default: 0})
+    request: number ;
 
 }
 

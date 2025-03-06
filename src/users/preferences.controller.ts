@@ -41,6 +41,7 @@ export class PreferencesController {
       familySituation: [],
       language: [],
       smoking: [],
+      typeOfRelationFind: [],
     });
   }
 

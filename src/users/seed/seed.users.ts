@@ -1,10 +1,10 @@
 import { ItPrivileges } from "src/auth/interfaces/ItPrivileges"
 import { AccountStatus, UserRole } from "../schemas/meta-data.schema"
 import { User } from "../schemas/user.schema"
-import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Gender, Language } from "../schemas/profile.schema"
+import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Gender, Language, TypeOfRelationFind } from "../schemas/profile.schema"
 import { Currency } from "../schemas/profit.schema"
 import { SocialNetworks } from "../schemas/social-network.schema"
-import { getRandomBirthdate, getRandomBoolean, getRandomEnumValue, getRandomPhoneNumber } from "./tools/seed.tools"
+import { getRandomBirthdate, getRandomBoolean, getRandomCreatedAt, getRandomEnumValue, getRandomPhoneNumber } from "./tools/seed.tools"
 
 
 export type SeedUser = Partial<User>
@@ -12,13 +12,13 @@ const seedUsers: SeedUser =
 {
     name: `Chamoy ${Math.random().toString(36).substring(7)}`,
     email: `${Math.random().toString(36).substring(7).toLocaleLowerCase()}@gmail.com`,
-    password: '123456',
+    password: 'X2Zr3EI4R5P6M7saA',
     metaData: {
         accountStatus: AccountStatus.ACTIVE,
         userRole: UserRole.USER,
         privileges: [ItPrivileges.DEFAULT],
         isAdmin: false,
-        createdAt: new Date(),
+        createdAt: getRandomCreatedAt(),
         lastConnection: new Date()
     },
     profile: {
@@ -31,8 +31,10 @@ const seedUsers: SeedUser =
         etnicidad: getRandomEnumValue(Etnicidad),
         familySituation: getRandomEnumValue(FamilySituation),
         gender: getRandomEnumValue(Gender),
+        typeOfRelationFind: getRandomEnumValue(TypeOfRelationFind),
         language: getRandomEnumValue(Language),
         phone: getRandomPhoneNumber('+51'),
+        request: Math.floor(Math.random() * 1000) + 1,
         genderVerified: false,
         geoLocations: {
             latitude: 0,
@@ -108,7 +110,16 @@ export const getRandomUsers = (count: number): SeedUser[] => {
                 gender: getRandomEnumValue(Gender),
                 language: getRandomEnumValue(Language),
                 phone: getRandomPhoneNumber('+51'),
+                request: Math.floor(Math.random() * 1000) + 1,
+                altura: Math.floor(Math.random() * (200 - 140 + 1)) + 140,
+                smoking: getRandomBoolean(),
+                typeOfRelationFind: getRandomEnumValue(TypeOfRelationFind),
+            },
+            metaData:{
+                ...seedUsers.metaData,
+                createdAt: getRandomCreatedAt(),
             }
+            
         };
         users.push(user);
     }

@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from "class-validator";
-import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Language } from "../schemas/profile.schema";
+import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Language, TypeOfRelationFind } from "../schemas/profile.schema";
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 
@@ -81,6 +81,12 @@ export class UpdatePreferenceDto {
     @IsArray()
     @ApiProperty()
     smoking: boolean[];
+
+    @IsOptional()
+    @IsEnum(TypeOfRelationFind, { each: true })
+    @IsArray()
+    @ApiProperty()
+    typeOfRelationFind: TypeOfRelationFind[];
 
     @IsOptional()
     @IsEnum(Language, { each: true })

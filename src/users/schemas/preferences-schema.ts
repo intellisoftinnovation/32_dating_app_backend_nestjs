@@ -1,6 +1,6 @@
 import {Prop , Schema, SchemaFactory} from '@nestjs/mongoose';
 import {HydratedDocument} from 'mongoose';
-import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Language } from './profile.schema';
+import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Language, TypeOfRelationFind } from './profile.schema';
 
 export type PreferenceDocument = HydratedDocument<Preference>;
 
@@ -49,6 +49,9 @@ export class Preference {
 
     @Prop({ type: [String], enum: Object.values(Language), default: []})
     language: Language[];
+
+    @Prop({type: [String], enum: Object.values(TypeOfRelationFind) ,  default: []})
+    typeOfRelationFind: TypeOfRelationFind[];
 
     @Prop({ type: [String], enum: Object.values(FamilySituation), default: []})
     familySituation: FamilySituation[];

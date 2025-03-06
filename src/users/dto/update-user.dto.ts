@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Appearance, BodyType,  EnglishLevel,  Etnicidad, FamilySituation, Gender, Language } from '../schemas/profile.schema';
+import { Appearance, BodyType,  EnglishLevel,  Etnicidad, FamilySituation, Gender, Language, TypeOfRelationFind } from '../schemas/profile.schema';
 import { SocialNetworks } from '../schemas/social-network.schema';
 import { Transform, Type } from 'class-transformer';
 import { Currency } from '../schemas/profit.schema';
@@ -113,6 +113,11 @@ export class UpdateUserDto {
     @IsEnum(Gender)
     @ApiProperty({ enum: Gender })
     gender?: Gender
+
+    @IsOptional()
+    @IsEnum(TypeOfRelationFind)
+    @ApiProperty({ enum: TypeOfRelationFind })
+    typeOfRelationFind?: TypeOfRelationFind
 
     @IsOptional()
     @IsArray()

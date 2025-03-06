@@ -19,6 +19,16 @@ export const getRandomBirthdate = (minAge: number, maxAge: number): Date => {
     return new Date(birthYear, birthMonth, birthDay);
 };
 
+export const getRandomCreatedAt = (): Date => {
+    const currentYear = new Date().getFullYear();
+    const createdAtYear = currentYear - Math.floor(Math.random() * 10);
+
+    const createdAtMonth = Math.floor(Math.random() * 12);
+    const createdAtDay = Math.floor(Math.random() * 31) + 1;
+
+    return new Date(createdAtYear, createdAtMonth, createdAtDay);
+};
+
 export const getRandomBoolean = (): boolean => {
     return Math.random() < 0.5;
 };
