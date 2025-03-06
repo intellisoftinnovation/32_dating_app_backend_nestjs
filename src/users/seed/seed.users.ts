@@ -4,7 +4,7 @@ import { User } from "../schemas/user.schema"
 import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Gender, Language, TypeOfRelationFind } from "../schemas/profile.schema"
 import { Currency } from "../schemas/profit.schema"
 import { SocialNetworks } from "../schemas/social-network.schema"
-import { getRandomBirthdate, getRandomBoolean, getRandomCreatedAt, getRandomEnumValue, getRandomPhoneNumber } from "./tools/seed.tools"
+import { getRandomBirthdate, getRandomBoolean, getRandomCreatedAt, getRandomEnumValue, getRandomGeoLocation, getRandomPhoneNumber } from "./tools/seed.tools"
 
 
 export type SeedUser = Partial<User>
@@ -108,6 +108,7 @@ export const getRandomUsers = (count: number): SeedUser[] => {
                 etnicidad: getRandomEnumValue(Etnicidad),
                 familySituation: getRandomEnumValue(FamilySituation),
                 gender: getRandomEnumValue(Gender),
+                geoLocations: getRandomGeoLocation(),
                 language: getRandomEnumValue(Language),
                 phone: getRandomPhoneNumber('+51'),
                 request: Math.floor(Math.random() * 1000) + 1,

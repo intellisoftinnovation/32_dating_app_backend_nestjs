@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel} from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import * as bycrypt from 'bcrypt'
 import { Model } from 'mongoose';
@@ -14,6 +14,7 @@ import { UpdatePreferenceDto } from './dto/update-preferences.dto';
 import { getRandomUsers } from './seed/seed.users';
 import { GetUsersDto, SortBy } from './dto/get-users.dto';
 import { formatTime, getAge } from 'src/tools/TIME';
+import { HaverSine } from 'src/tools/HAVERSINE';
 
 
 
@@ -255,9 +256,13 @@ export class UsersService {
     }
 
     async getAllUsers(id: string, getUsersDto: GetUsersDto) {
+        const selfUser = await this.userModel.findById(id);
+        if (!selfUser) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
+        await selfUser.populate('profile', 'geoLocations');
+        const selfLocation = selfUser.profile.geoLocations ;
         let ageRange: AgeRange = null
         let alturaRange: Altura = null
-        const { page, size, age_min, age_max, altura_min, altura_max, appearance, bodyType,  englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, sortBy } = getUsersDto;
+        const { page, size, age_min, age_max, altura_min, altura_max, appearance, bodyType,  englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy } = getUsersDto;
 
         if ((age_min || age_max) && !(age_min && age_max)) throw new HttpException({ message: 'Age range is invalid .', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
         if ((age_min && age_max) && (age_max < age_min)) throw new HttpException({ message: 'Age range is invalid ..', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
@@ -279,7 +284,7 @@ export class UsersService {
 
         const timeDb = process.hrtime();
 
-        const data = await this.userModel.find({}).select('-_id -password -__v').populate('profile', '-_id -description -__v').populate('metaData', 'createdAt -_id')
+        const data = await this.userModel.find({}).lean().select('-_id -password -__v').populate('profile', '-_id -description -__v -socialNetworks').populate('metaData', 'createdAt -_id')
         // const data = await this.userModel.find({}).populate('profile').populate('metaData')
 
         const timeDbEnd = process.hrtime(timeDb);
@@ -299,12 +304,16 @@ export class UsersService {
             const languageMatch = language?.length ? language.includes(user.profile.language) : false;
             const smokingMatch = smoking?.length ? smoking.includes(user.profile.smoking) : false;
             const typeOfRelationFindMatch = typeOfRelationFind?.length ? typeOfRelationFind.includes(user.profile.typeOfRelationFind) : false;
+            const distanceMatch = distance ? (HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude) <= distance ): false;
 
-            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || (altura_min && altura_max) || (age_min && age_max);
+            // if(distanceMatch){
+            //     console.log(HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude))
+            // }
+            
+            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || distance || (altura_min && altura_max) || (age_min && age_max) ;
 
-            return genderMatch && (!hasAnyFilter || ageMatch || alturaMatch || appearanceMatch || bodyTypeMatch || englishLevelMatch || etnicidadMatch || familySituationMatch || languageMatch || smokingMatch || typeOfRelationFindMatch);
+            return genderMatch && (!hasAnyFilter || ageMatch || alturaMatch || distanceMatch || appearanceMatch || bodyTypeMatch || englishLevelMatch || etnicidadMatch || familySituationMatch || languageMatch || smokingMatch || typeOfRelationFindMatch);
         });
-
 
         if (sortBy == SortBy.NEW) dataFiltered.sort((a, b) => b.metaData.createdAt.getTime() - a.metaData.createdAt.getTime())
         if (sortBy == SortBy.HOT) dataFiltered.sort((a, b) => b.profile.request - a.profile.request)

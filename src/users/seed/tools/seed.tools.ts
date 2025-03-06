@@ -37,3 +37,14 @@ export const getRandomPhoneNumber = (countryCode: string): string => {
     const phoneNumber = Math.floor(Math.random() * 10000000 + 10000000);
     return `+${countryCode}${phoneNumber}`;
 };
+
+
+
+export const getRandomGeoLocation = () => {
+    return {
+        latitude: Number((Math.random() * 180 - 90).toFixed(6)),
+        longitude: Number((Math.random() * 360 - 180).toFixed(6)),
+        city: 'City Example',
+        country: 'Country Example',
+    };
+}
