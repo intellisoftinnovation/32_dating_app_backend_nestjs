@@ -13,7 +13,6 @@ import { GetUsersDto } from './dto/get-users.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
-
   @Post()
   @ApiResponse({ status: HttpStatus.CREATED })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
@@ -29,6 +28,15 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User with provided id dont exist' })
   async getSelfUser(@GetUser('_id') idInToken: string) {
     return await this.usersService.getSelfUser(idInToken);
+  }
+
+  @Get('profile/:id')
+  @Auth()
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid id' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User with provided id dont exist' })
+  async getUserProfile(@Param('id') id: string, @GetUser('_id') idInToken: string) {
+    return await this.usersService.getUserProfile(id, idInToken);
   }
 
   @Auth()

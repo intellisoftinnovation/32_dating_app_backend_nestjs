@@ -9,13 +9,16 @@ import { DatabaseConnectionExceptionFilter } from './Pipes/database-connection-e
 import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
 import { KycModule } from './kyc/kyc.module';
+import { MatchRequestModule } from './match-request/match-request.module';
+
 @Module({
   imports: [
     MongooseModule.forRoot(envs.DB_URI),
     AuthModule,
     UsersModule,
     FilesModule,
-    KycModule
+    KycModule,
+    MatchRequestModule,
   ],
   providers: [
     {

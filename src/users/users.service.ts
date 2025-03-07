@@ -1,11 +1,11 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import * as bycrypt from 'bcrypt'
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AccountStatus, MetaData } from './schemas/meta-data.schema';
-import { Profile } from './schemas/profile.schema';
+import { Gender, Profile } from './schemas/profile.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { FindForLoginDto } from './dto/find-for-login.dto';
@@ -15,6 +15,7 @@ import { getRandomUsers } from './seed/seed.users';
 import { Enviroment, GetUsersDto, SortBy } from './dto/get-users.dto';
 import { formatTime, getAge } from 'src/tools/TIME';
 import { HaverSine } from 'src/tools/HAVERSINE';
+import { MatchRequestService } from 'src/match-request/match-request.service';
 
 
 
@@ -26,6 +27,7 @@ export class UsersService {
         @InjectModel(MetaData.name) private readonly metaDataModel: Model<MetaData>,
         @InjectModel(Profile.name) private readonly profileModel: Model<Profile>,
         @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
+        @Inject(forwardRef(() => MatchRequestService)) private readonly matchRequestService: MatchRequestService,
         private readonly jwtService: JwtService
     ) { }
 
@@ -256,8 +258,6 @@ export class UsersService {
         return { message: "Seed finished", result: { success, error, errors } }
     }
 
-
-
     async getAllUsers(id: string, getUsersDto: GetUsersDto) {
         const selfUser = await this.userModel.findById(id);
         if (!selfUser) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
@@ -335,7 +335,7 @@ export class UsersService {
 
             return acc;
         }, []);
-        
+
         if (sortBy == SortBy.NEW) dataFiltered.sort((a, b) => b.metaData.createdAt.getTime() - a.metaData.createdAt.getTime())
         if (sortBy == SortBy.HOT) dataFiltered.sort((a, b) => b.profile.request - a.profile.request)
 
@@ -368,6 +368,73 @@ export class UsersService {
         };
 
     }
+
+
+    async refreshMatchHot(update: { count: number, to: mongoose.Types.ObjectId, profileID: mongoose.Types.ObjectId }[]) {
+        console.log(update);
+        const bulkOps = update.map(u => ({
+            updateOne: {
+                filter: { _id: u.profileID },
+                update: {
+                    $set: { 'request': u.count }
+                }
+            }
+        }));
+
+        const ids = update.map(u => u.profileID.toString());
+
+        const resetOps = {
+            updateMany: {
+                filter: { _id: { $nin: ids } },
+                update: {
+                    $set: { 'request': 0 }
+                }
+            }
+        };
+
+        await this.profileModel.bulkWrite([...bulkOps, resetOps]);
+    }
+
+    async getUserProfile(id: string, idInToken: string) {
+        const user = await this.userModel.findById(id);
+        const selfUser = await this.userModel.findById(idInToken);
+        if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
+        if(!selfUser) throw new HttpException({ message: `User with id ${idInToken} not found` }, HttpStatus.NOT_FOUND);
+        await user.populate('profile');
+        await user.populate('metaData');
+        await selfUser.populate('profile');
+        
+        
+        
+        if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with id ${id} was deleted` }, HttpStatus.NOT_FOUND);
+        if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with id ${id} is suspended` }, HttpStatus.FORBIDDEN);
+
+        const solicitud = await this.matchRequestService.getMatchRequestByFromTo(idInToken, id);
+
+        return {
+            message: `User with id ${id} profile fetched`, profile: {
+                name: user.name,
+                altura: user.profile.altura,
+                appareanc: user.profile.appearance,
+                etnicidad: user.profile.etnicidad,
+                age: getAge(user.profile.birthdate),
+                bodyType: user.profile.bodyType,
+                description: user.profile.description,
+                englishLevel: user.profile.englishLevel,
+                familySituation: user.profile.familySituation,
+                distance: HaverSine(selfUser.profile.geoLocations.latitude, selfUser.profile.geoLocations.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude),
+                language: user.profile.language,
+                photos: user.profile.photos,
+                ...(user.profile.gender == Gender.MALE?{profit: user.profile.profit}:{}),
+                smoking: user.profile.smoking,
+                typeOfRelationFind: user.profile.typeOfRelationFind,
+                lastConnection: user.metaData.lastConnection,
+                ...(solicitud ? { solicitud: solicitud.status } : {}),
+            }
+        };
+    }
+
+
 }
 
 
