@@ -18,13 +18,13 @@ export class User {
   @Prop({required: true , type: String, default: 'Chomy User'})
   name: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'MetaData'})
+  @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'MetaData' ,  index: true })
   metaData: MetaData;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'Profile'  })
+  @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'Profile' ,  index: true  })
   profile: Profile
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'Preference'})
+  @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'Preference',  index: true })
   preference: Preference;
   
 }

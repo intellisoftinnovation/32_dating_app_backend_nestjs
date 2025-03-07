@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel} from '@nestjs/mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import * as bycrypt from 'bcrypt'
 import { Model } from 'mongoose';
@@ -12,9 +12,10 @@ import { FindForLoginDto } from './dto/find-for-login.dto';
 import { AgeRange, Altura, Preference } from './schemas/preferences-schema';
 import { UpdatePreferenceDto } from './dto/update-preferences.dto';
 import { getRandomUsers } from './seed/seed.users';
-import { GetUsersDto, SortBy } from './dto/get-users.dto';
+import { Enviroment, GetUsersDto, SortBy } from './dto/get-users.dto';
 import { formatTime, getAge } from 'src/tools/TIME';
 import { HaverSine } from 'src/tools/HAVERSINE';
+
 
 
 
@@ -255,14 +256,16 @@ export class UsersService {
         return { message: "Seed finished", result: { success, error, errors } }
     }
 
+
+
     async getAllUsers(id: string, getUsersDto: GetUsersDto) {
         const selfUser = await this.userModel.findById(id);
         if (!selfUser) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await selfUser.populate('profile', 'geoLocations');
-        const selfLocation = selfUser.profile.geoLocations ;
+        const selfLocation = selfUser.profile.geoLocations;
         let ageRange: AgeRange = null
         let alturaRange: Altura = null
-        const { page, size, age_min, age_max, altura_min, altura_max, appearance, bodyType,  englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy } = getUsersDto;
+        const { page, size, age_min, age_max, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
 
         if ((age_min || age_max) && !(age_min && age_max)) throw new HttpException({ message: 'Age range is invalid .', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
         if ((age_min && age_max) && (age_max < age_min)) throw new HttpException({ message: 'Age range is invalid ..', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
@@ -284,18 +287,17 @@ export class UsersService {
 
         const timeDb = process.hrtime();
 
-        const data = await this.userModel.find({}).lean().select('-_id -password -__v').populate('profile', '-_id -description -__v -socialNetworks').populate('metaData', 'createdAt -_id')
-        // const data = await this.userModel.find({}).populate('profile').populate('metaData')
+        const data = await this.userModel.find({}).lean().populate('profile', '-_id -description -__v -socialNetworks').populate('metaData', 'createdAt -_id')
 
         const timeDbEnd = process.hrtime(timeDb);
 
         const timeFilter = process.hrtime();
 
-        const dataFiltered = data.filter((user) => {
-            const genderMatch = gender?.length ? gender.includes(user.profile.gender) : true; // Si no hay gender, todos pasan
+
+        const dataFiltered = data.reduce((acc, user) => {
+            const genderMatch = gender?.length ? gender.includes(user.profile.gender) : true;
             const ageMatch = ageRange ? (getAge(user.profile.birthdate) >= ageRange.min && getAge(user.profile.birthdate) <= ageRange.max) : false;
             const alturaMatch = alturaRange ? (user.profile.altura >= alturaRange.min && user.profile.altura <= alturaRange.max) : false;
-
             const appearanceMatch = appearance?.length ? appearance.includes(user.profile.appearance) : false;
             const bodyTypeMatch = bodyType?.length ? bodyType.includes(user.profile.bodyType) : false;
             const englishLevelMatch = englishLevel?.length ? englishLevel.includes(user.profile.englishLevel) : false;
@@ -304,17 +306,36 @@ export class UsersService {
             const languageMatch = language?.length ? language.includes(user.profile.language) : false;
             const smokingMatch = smoking?.length ? smoking.includes(user.profile.smoking) : false;
             const typeOfRelationFindMatch = typeOfRelationFind?.length ? typeOfRelationFind.includes(user.profile.typeOfRelationFind) : false;
-            const distanceMatch = distance ? (HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude) <= distance ): false;
+            const userDistance = HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
+            const distanceMatch = distance ? (userDistance <= distance) : false;
 
-            // if(distanceMatch){
-            //     console.log(HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude))
-            // }
-            
-            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || distance || (altura_min && altura_max) || (age_min && age_max) ;
+            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
 
-            return genderMatch && (!hasAnyFilter || ageMatch || alturaMatch || distanceMatch || appearanceMatch || bodyTypeMatch || englishLevelMatch || etnicidadMatch || familySituationMatch || languageMatch || smokingMatch || typeOfRelationFindMatch);
-        });
+            const match = genderMatch && (!hasAnyFilter || ageMatch || alturaMatch || distanceMatch || appearanceMatch || bodyTypeMatch || englishLevelMatch || etnicidadMatch || familySituationMatch || languageMatch || smokingMatch || typeOfRelationFindMatch);
 
+            if (match) {
+                switch (enviroment) {
+                    case Enviroment.DEVELOPMENT:
+                        acc.push({
+                            ...user
+                        });
+                    default:
+                        acc.push({
+                            name: user.name,
+                            age: getAge(user.profile.birthdate),
+                            photo: user.profile.photos[0] || "",
+                            distance: userDistance,
+                            profile: { request: user.profile.request },
+                            metaData: user.metaData,
+                            id: user._id
+                        });
+                        break;
+                }
+            }
+
+            return acc;
+        }, []);
+        
         if (sortBy == SortBy.NEW) dataFiltered.sort((a, b) => b.metaData.createdAt.getTime() - a.metaData.createdAt.getTime())
         if (sortBy == SortBy.HOT) dataFiltered.sort((a, b) => b.profile.request - a.profile.request)
 
@@ -341,8 +362,11 @@ export class UsersService {
         };
 
         return {
-            metadata, timings, data: paginatedData
-        }
+            data: paginatedData,
+            metadata,
+            ...(enviroment === Enviroment.DEVELOPMENT ? { timings } : {})
+        };
+
     }
 }
 

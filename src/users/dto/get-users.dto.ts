@@ -9,6 +9,11 @@ export enum SortBy {
     NEW = "NEW"
 }
 
+export enum Enviroment { 
+    PRODUCTION  = "PRODUCTION",
+    DEVELOPMENT = "DEVELOPMENT"
+}
+
 export class GetUsersDto extends PaginationDto {
     @IsArray()
     @IsEnum(Appearance, { each: true })
@@ -116,4 +121,10 @@ export class GetUsersDto extends PaginationDto {
     @IsEnum(SortBy)
     @ApiPropertyOptional({ enum: SortBy, default: SortBy.NEW })
     sortBy: SortBy = SortBy.NEW;
+
+    @IsOptional()
+    @IsEnum(Enviroment)
+    @ApiPropertyOptional({ enum: Enviroment, default: Enviroment.PRODUCTION })
+    enviroment: Enviroment = Enviroment.PRODUCTION
+  
 }
