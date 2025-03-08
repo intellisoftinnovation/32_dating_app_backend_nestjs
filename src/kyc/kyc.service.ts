@@ -18,6 +18,9 @@ export class KycService {
     async genderVerify(file: Express.Multer.File, user: UserDocument) {
         const tempUser = await this.usersService.getSelfUser(user._id.toString())
         const gender = tempUser.profile.gender
+        if (!gender) {
+            throw new HttpException({ message: 'You have not selected a gender yet' }, HttpStatus.PRECONDITION_FAILED);
+        }
         const tempFile = await this.filesService.create(file, user)
 
         const { code, details, verified } = await facePlusGenderVerify(gender, tempFile.secure_url)

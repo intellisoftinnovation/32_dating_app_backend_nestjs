@@ -21,7 +21,7 @@ export class KycController {
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: fileFilterImg
   }))
-  @ApiResponse({ status: 412, description: 'Precondition failed, read error_flag' })
+  @ApiResponse({ status: 412, description: 'Precondition failed, gender not selected' })
   @ApiResponse({
     status: 503,
     description: 'File upload failed, contact the developer',

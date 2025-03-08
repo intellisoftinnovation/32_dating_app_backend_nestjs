@@ -69,57 +69,57 @@ export enum FamilySituation {
 @Schema()
 export class Profile {
 
-    @Prop({ type: String, maxlength: 300, default: "" })
+    @Prop({ type: String, maxlength: 300})
     description: string;
 
-    @Prop({ type: String, enum: Object.values(Appearance), default: Appearance.AVERAGE })
+    @Prop({ type: String, enum: Object.values(Appearance)})
     appearance: Appearance
 
-    @Prop({Type: String, enum: Object.values(Etnicidad), default: Etnicidad.BLANCO})
+    @Prop({Type: String, enum: Object.values(Etnicidad)})
     etnicidad: Etnicidad;
 
-    @Prop({ type: String, enum: Object.values(EnglishLevel), default: EnglishLevel.MEDIO })
+    @Prop({ type: String, enum: Object.values(EnglishLevel)})
     englishLevel: EnglishLevel;
 
-    @Prop({ type: Date, default: () => new Date() })
+    @Prop({ type: Date })
     birthdate: Date;
 
 
 
-    @Prop({ type: String, enum: Object.values(Gender), default: Gender.MALE, required: true })
+    @Prop({ type: String, enum: Object.values(Gender)})
     gender: Gender;
 
     //TODO:  Limitar a 6 Fotos
-    @Prop({ type: [String], required: true, default: [] })
+    @Prop({ type: [String] })
     photos: string[];
 
-    @Prop({ type: [SocialNetwork], required: true, default: [] })
+    @Prop({ type: [SocialNetwork]})
     socialNetworks: SocialNetwork[];
 
-    @Prop({ type: GeoLocation, required: true, default: new GeoLocation() })
+    @Prop({ type: GeoLocation })
     geoLocations: GeoLocation;
 
-    @Prop({ type: Number, default: 0 })
+    @Prop({ type: Number})
     altura: number;
 
-    @Prop({ type: String, enum: Object.values(BodyType), default: BodyType.AVERAGE })
+    @Prop({ type: String, enum: Object.values(BodyType)})
     bodyType: BodyType;
 
-    @Prop({ type: Boolean, default: false })
+    @Prop({ type: Boolean})
     smoking: boolean;
 
-    @Prop({ type: String , enum: Object.values(TypeOfRelationFind), default: TypeOfRelationFind.FRIENDSHIP })
+    @Prop({ type: String , enum: Object.values(TypeOfRelationFind)})
     typeOfRelationFind: TypeOfRelationFind;
 
-    @Prop({ type: String, enum: Object.values(Language), default: Language.SPANISH })
+    @Prop({ type: String, enum: Object.values(Language)})
     language: Language;
 
-    @Prop({ type: String, enum: Object.values(FamilySituation), default: FamilySituation.NO_CHILDREN })
+    @Prop({ type: String, enum: Object.values(FamilySituation)})
     familySituation: FamilySituation;
 
     
 
-    @Prop({ type: Profit, default: () => new Profit() })
+    @Prop({ type: Profit})
     profit: Profit;
 
     @Prop({ type: String})
