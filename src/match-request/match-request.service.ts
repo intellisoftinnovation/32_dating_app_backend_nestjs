@@ -19,7 +19,7 @@ export class MatchRequestService {
 
         // const existMatchRequest = await this.matchRequestModel.findOne({ from: from._id, to: to._id });
         // if (existMatchRequest) throw new HttpException({ message: `You already have a match request`}, HttpStatus.AMBIGUOUS);
-
+        // TODO: Validate if match request exist
         const matchRequest = await this.matchRequestModel.create({ from, to });
 
         this.refreshMatchHot();

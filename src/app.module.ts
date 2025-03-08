@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
 import { KycModule } from './kyc/kyc.module';
 import { MatchRequestModule } from './match-request/match-request.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MatchRequestModule } from './match-request/match-request.module';
     FilesModule,
     KycModule,
     MatchRequestModule,
+    PaymentModule,
   ],
   providers: [
     {

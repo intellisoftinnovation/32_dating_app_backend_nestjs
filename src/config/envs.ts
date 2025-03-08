@@ -16,6 +16,8 @@ interface Envs {
   TWILIO_ACCOUNT_SID: string;
   TWILIO_AUTH_TOKEN: string;
   TWILIO_PHONE_NUMBER: string;
+  MERCADOPAGO_ACCESS_TOKEN: string;
+  MERCADOPAGO_SECRET_WEBHOOK_KEY: string;
 }
 
 const envSchema = joi
@@ -34,6 +36,8 @@ const envSchema = joi
     TWILIO_ACCOUNT_SID: joi.string().required(),
     TWILIO_AUTH_TOKEN: joi.string().required(),
     TWILIO_PHONE_NUMBER: joi.string().required(),
+    MERCADOPAGO_ACCESS_TOKEN: joi.string().required(),
+    MERCADOPAGO_SECRET_WEBHOOK_KEY: joi.string().required(),
   })
   .unknown();
 
@@ -60,4 +64,6 @@ export const envs: Envs = {
   TWILIO_ACCOUNT_SID: value.TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN: value.TWILIO_AUTH_TOKEN,
   TWILIO_PHONE_NUMBER: value.TWILIO_PHONE_NUMBER,
+  MERCADOPAGO_ACCESS_TOKEN: value.MERCADOPAGO_ACCESS_TOKEN,
+  MERCADOPAGO_SECRET_WEBHOOK_KEY: value.MERCADOPAGO_SECRET_WEBHOOK_KEY,
 };
