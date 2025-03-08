@@ -306,8 +306,12 @@ export class UsersService {
             const languageMatch = language?.length ? language.includes(user.profile.language) : false;
             const smokingMatch = smoking?.length ? smoking.includes(user.profile.smoking) : false;
             const typeOfRelationFindMatch = typeOfRelationFind?.length ? typeOfRelationFind.includes(user.profile.typeOfRelationFind) : false;
-            const userDistance = HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
-            const distanceMatch = distance ? (userDistance <= distance) : false;
+            let userDistance = -1 ; 
+            if (selfLocation && user.profile.geoLocations) {
+                userDistance = HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
+            }
+            let distanceMatch = distance ? (userDistance <= distance) : false;
+            if(!selfLocation) distanceMatch = false;
 
             const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
 
@@ -399,18 +403,19 @@ export class UsersService {
         const user = await this.userModel.findById(id);
         const selfUser = await this.userModel.findById(idInToken);
         if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
-        if(!selfUser) throw new HttpException({ message: `User with id ${idInToken} not found` }, HttpStatus.NOT_FOUND);
+        if (!selfUser) throw new HttpException({ message: `User with id ${idInToken} not found` }, HttpStatus.NOT_FOUND);
         await user.populate('profile');
         await user.populate('metaData');
         await selfUser.populate('profile');
-        
-        
-        
+
+
+
         if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with id ${id} was deleted` }, HttpStatus.NOT_FOUND);
         if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with id ${id} is suspended` }, HttpStatus.FORBIDDEN);
 
         const solicitud = await this.matchRequestService.getMatchRequestByFromTo(idInToken, id);
-
+        let distance = -1;
+        if (selfUser.profile.geoLocations && user.profile.geoLocations) distance = HaverSine(selfUser.profile.geoLocations.latitude, selfUser.profile.geoLocations.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude);
         return {
             message: `User with id ${id} profile fetched`, profile: {
                 name: user.name,
@@ -422,10 +427,10 @@ export class UsersService {
                 description: user.profile.description,
                 englishLevel: user.profile.englishLevel,
                 familySituation: user.profile.familySituation,
-                distance: HaverSine(selfUser.profile.geoLocations.latitude, selfUser.profile.geoLocations.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude),
+                distance,
                 language: user.profile.language,
                 photos: user.profile.photos,
-                ...(user.profile.gender == Gender.MALE?{profit: user.profile.profit}:{}),
+                ...(user.profile.gender == Gender.MALE ? { profit: user.profile.profit } : {}),
                 smoking: user.profile.smoking,
                 typeOfRelationFind: user.profile.typeOfRelationFind,
                 lastConnection: user.metaData.lastConnection,
