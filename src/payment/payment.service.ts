@@ -9,7 +9,7 @@ export class PaymentService {
     constructor() {
         this.client = new MercadoPagoConfig({
             accessToken: envs.MERCADOPAGO_ACCESS_TOKEN,
-            options: { timeout: 5000, idempotencyKey: 'abc' }
+            options: { timeout: 5000, idempotencyKey: 'abc'}
         });
 
     }
@@ -43,7 +43,7 @@ export class PaymentService {
         const results = await preApproval.create({
             body: {
                 status: "pending",
-                payer_email: "babyyoda62406@gmail.com",
+                payer_email: "test@test.com",
                 back_url: "https://processors-nobody-mortality-tuner.trycloudflare.com/api/0.0.1/payment/subcribehook",
                 reason: "Test",
                 auto_recurring: {
@@ -51,7 +51,8 @@ export class PaymentService {
                     frequency_type: "months",
                     transaction_amount: 2,
                     currency_id: "PEN"
-                }
+                }, 
+                external_reference: "123456789"
             }
         });
         return { message: "New Subscription Success", results };
