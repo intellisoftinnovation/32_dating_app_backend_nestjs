@@ -24,7 +24,7 @@ export class FilesService {
       .upload(
         `${rootDirectory}/${filePath}`, {
         public_id: `${user._id}@${filePath.split('.')[0]}`,
-        folder: 'Chomy',
+        folder: 'chamoy',
       }
       )
       .catch((error) => {
