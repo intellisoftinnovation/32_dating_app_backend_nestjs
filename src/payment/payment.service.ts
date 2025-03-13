@@ -87,7 +87,7 @@ export class PaymentService {
 
             if (results.results.length < LIMIT) break;
 
-            offset += LyouIMIT;
+            offset += LIMIT;
 
             if (!premium) await delay(500);
             // console.log(`Fetching next ${LIMIT} results...`);
