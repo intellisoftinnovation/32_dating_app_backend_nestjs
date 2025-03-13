@@ -9,12 +9,12 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
   
-  @Post('subcribehook')
+  // @Post('subcribehook')
   async subscribe(@Body() data:any) {
     return this.paymentService.subscribeHook(data);
   }
 
-  @Post('test/:q')
+  // @Post('test/:q')
   async test(@Param('q') idInToken: string) {
     return this.paymentService.test(idInToken);
   }
