@@ -6,6 +6,7 @@ export type SocialNetworkDocument = HydratedDocument<SocialNetwork>;
 export enum SocialNetworks{
     INSTAGRAM = 'INSTAGRAM',
     FACEBOOK = 'FACEBOOK',
+    TIKTOK   = 'TIKTOK'
 }
 
 @Schema()

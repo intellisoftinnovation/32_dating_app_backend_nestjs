@@ -11,6 +11,7 @@ import { FilesModule } from './files/files.module';
 import { KycModule } from './kyc/kyc.module';
 import { MatchRequestModule } from './match-request/match-request.module';
 import { PaymentModule } from './payment/payment.module';
+import { PlanModule } from './plan/plan.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PaymentModule } from './payment/payment.module';
     KycModule,
     MatchRequestModule,
     PaymentModule,
+    PlanModule,
   ],
   providers: [
     {

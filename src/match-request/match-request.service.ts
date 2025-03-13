@@ -4,22 +4,22 @@ import { UsersService } from 'src/users/users.service';
 import { MatchRequest, MatchRequestStatus } from './schemas/match-request.schema';
 import { Model } from 'mongoose';
 import { GetMatchRequestDto, Side } from './dto/get-match-request.dto';
+import { PaymentService } from 'src/payment/payment.service';
 
 @Injectable()
 export class MatchRequestService {
     constructor(
         @Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
+        @Inject(forwardRef(()=> PaymentService)) private readonly paymentService: PaymentService,
         @InjectModel(MatchRequest.name) private readonly matchRequestModel: Model<MatchRequest>,
     ) { }
 
     async newMatchRequest(idInToken: string, id: string) {
         const from = await this.userService.getUserById(idInToken);
         const to = await this.userService.getUserById(id);
-        // TODO: Check if user is preium 
+        const isPremium = await this.paymentService.isPremiumUser(from.inc_id);
 
-        // const existMatchRequest = await this.matchRequestModel.findOne({ from: from._id, to: to._id });
-        // if (existMatchRequest) throw new HttpException({ message: `You already have a match request`}, HttpStatus.AMBIGUOUS);
-        // TODO: Validate if match request exist
+        if(!isPremium) throw new HttpException({ message: `You need to be a premium user to make a match request`}, HttpStatus.PAYMENT_REQUIRED);
         const matchRequest = await this.matchRequestModel.create({ from, to });
 
         this.refreshMatchHot();

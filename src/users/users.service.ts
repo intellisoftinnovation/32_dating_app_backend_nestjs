@@ -16,6 +16,8 @@ import { Enviroment, GetUsersDto, SortBy } from './dto/get-users.dto';
 import { formatTime, getAge } from 'src/tools/TIME';
 import { HaverSine } from 'src/tools/HAVERSINE';
 import { MatchRequestService } from 'src/match-request/match-request.service';
+import { PaymentService } from 'src/payment/payment.service';
+import { MatchRequestStatus } from 'src/match-request/schemas/match-request.schema';
 
 
 
@@ -27,6 +29,7 @@ export class UsersService {
         @InjectModel(MetaData.name) private readonly metaDataModel: Model<MetaData>,
         @InjectModel(Profile.name) private readonly profileModel: Model<Profile>,
         @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
+        @Inject(forwardRef(()=> PaymentService)) private readonly paymentService: PaymentService,
         @Inject(forwardRef(() => MatchRequestService)) private readonly matchRequestService: MatchRequestService,
         private readonly jwtService: JwtService
     ) { }
@@ -408,7 +411,8 @@ export class UsersService {
         await user.populate('metaData');
         await selfUser.populate('profile');
 
-
+        const isPremium = await this.paymentService.isPremiumUser(selfUser.inc_id);
+        
 
         if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with id ${id} was deleted` }, HttpStatus.NOT_FOUND);
         if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with id ${id} is suspended` }, HttpStatus.FORBIDDEN);
@@ -435,10 +439,10 @@ export class UsersService {
                 typeOfRelationFind: user.profile.typeOfRelationFind,
                 lastConnection: user.metaData.lastConnection,
                 ...(solicitud ? { solicitud: solicitud.status } : {}),
+                ...((isPremium && solicitud && solicitud.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone , networks: user.profile.socialNetworks } : {}),
             }
         };
     }
-
 
 }
 

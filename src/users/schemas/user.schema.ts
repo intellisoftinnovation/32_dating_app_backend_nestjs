@@ -1,5 +1,6 @@
 import {Prop , Schema, SchemaFactory} from '@nestjs/mongoose';
 import mongoose, {HydratedDocument} from 'mongoose';
+import { autoIncrement } from 'mongoose-plugin-autoinc';
 
 import { MetaData } from './meta-data.schema';
 import { Profile } from './profile.schema';
@@ -26,7 +27,11 @@ export class User {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId , ref: 'Preference',  index: true })
   preference: Preference;
+
+  @Prop({ type: String})
+  inc_id: string;
   
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.plugin(autoIncrement, { model: 'User', field: 'inc_id' });

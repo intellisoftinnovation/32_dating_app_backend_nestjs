@@ -41,6 +41,7 @@
     "joi": "^17.13.3",
     "mercadopago": "^2.3.0",
     "mongoose": "8.11.0",
+    "mongoose-plugin-autoinc": "^1.1.9",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",

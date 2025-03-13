@@ -1,32 +1,33 @@
-import { Body, Controller,  Get,  Post } from '@nestjs/common';
+import { Body, Controller,Param,Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+
 
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
-  @Post('test')
-  async test() {
-    return this.paymentService.test();
-  }
-
+  
   @Post('subcribehook')
   async subscribe(@Body() data:any) {
     return this.paymentService.subscribeHook(data);
   }
 
-  @Get('getSubscriptions')
-  async getSubscriptions() {
-    return this.paymentService.getSubscriptions();
+  @Post('test/:q')
+  async test(@Param('q') idInToken: string) {
+    return this.paymentService.test(idInToken);
   }
 
-  @Get('getPlans')
-  async getPlans() {
-    return this.paymentService.getPlans();
-  }
 
   @Post('newSubscription')
-  async newSubscription() {
-    return this.paymentService.newSubscription();
+  @Auth()
+  async newSubscription(@Body() createSubscriptionDto: CreateSubscriptionDto, @GetUser('inc_id') idInToken: string) {
+    return this.paymentService.newSubscription(createSubscriptionDto , idInToken);
   }
+
   
+  
+
+
 }

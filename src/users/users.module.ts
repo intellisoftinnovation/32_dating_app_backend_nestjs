@@ -10,6 +10,7 @@ import { AuthModule } from '../auth/auth.module';
 import { PreferencesController } from './preferences.controller';
 import { Preference, PreferenceSchema } from './schemas/preferences-schema';
 import { MatchRequestModule } from 'src/match-request/match-request.module';
+import { PaymentModule } from 'src/payment/payment.module';
 @Module({
   imports: [MongooseModule.forFeature([
     { name: User.name, schema: UserSchema },
@@ -18,7 +19,8 @@ import { MatchRequestModule } from 'src/match-request/match-request.module';
     { name: Preference.name, schema: PreferenceSchema }
   ]),
   forwardRef(() => AuthModule),
-  forwardRef(() => MatchRequestModule)
+  forwardRef(() => MatchRequestModule), 
+  forwardRef(() => PaymentModule),
   ],
   controllers: [UsersController, PreferencesController],
   providers: [UsersService],
