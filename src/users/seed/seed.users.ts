@@ -19,7 +19,8 @@ const seedUsers: SeedUser =
         privileges: [ItPrivileges.DEFAULT],
         isAdmin: false,
         createdAt: getRandomCreatedAt(),
-        lastConnection: new Date()
+        lastConnection: new Date(), 
+        active_session:""
     },
     profile: {
         altura: 180,

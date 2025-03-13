@@ -6,6 +6,8 @@ import { LoginDto } from './dto/find-for-login.dto';
 import { WantPassRecoveryDto } from './dto/want-pass-recovery.dto';
 import { OtpPassRecoveryDto } from './dto/otp-pass-recovery.dto';
 import { ConfirmPassRecoveryDto } from './dto/confir-pass-recovery.dto';
+import { GetUser } from './decorators/get-user.decorator';
+import { Auth } from './decorators/auth.decorator';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
@@ -53,6 +55,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   otpPassRecovery(@Body() otpPassRecoveryDto: OtpPassRecoveryDto) {
     return this.authService.otpPassRecovery(otpPassRecoveryDto);
+  }
+
+  @Post('/logout')
+  @HttpCode(HttpStatus.OK)
+  @Auth()
+  logout(@GetUser('id') id: string) {
+    return this.authService.logout(id);
   }
 
 

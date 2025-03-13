@@ -37,7 +37,8 @@ export class MetaData {
     @Prop({ type: [String], enum: Object.values(Privileges), default: [Privileges.DEFAULT], required: true })
     privileges: Privileges[]; 
 
-
+    @Prop({ type: String, default: "" , select: false })
+    active_session: string
 }
 
 export const MetaDataSchema = SchemaFactory.createForClass(MetaData);

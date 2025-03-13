@@ -29,7 +29,7 @@ export class UsersService {
         @InjectModel(MetaData.name) private readonly metaDataModel: Model<MetaData>,
         @InjectModel(Profile.name) private readonly profileModel: Model<Profile>,
         @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
-        @Inject(forwardRef(()=> PaymentService)) private readonly paymentService: PaymentService,
+        @Inject(forwardRef(() => PaymentService)) private readonly paymentService: PaymentService,
         @Inject(forwardRef(() => MatchRequestService)) private readonly matchRequestService: MatchRequestService,
         private readonly jwtService: JwtService
     ) { }
@@ -101,7 +101,10 @@ export class UsersService {
         };
 
         if (language) await this.profileModel.updateOne({ _id: user.profile }, { $set: { language } });
-        if (photos) await this.profileModel.updateOne({ _id: user.profile }, { $set: { photos } });
+        if (photos) {
+            if(photos.length > 6) throw new HttpException({ message: `You can only to have 6 photos`}, HttpStatus.BAD_REQUEST)
+            await this.profileModel.updateOne({ _id: user.profile }, { $set: { photos } })
+        }
         if (socialNetworks) await this.profileModel.updateOne({ _id: user.profile }, { $set: { socialNetworks } });
 
         if (profit) {
@@ -136,19 +139,20 @@ export class UsersService {
     async findOneForJwtStragety(id: string) {
         const user = await this.userModel.findById(id);
         if (!user) return null;
-        await user.populate('metaData');
+        await user.populate('metaData', '+active_session');
         return user;
     }
 
     async findForLogin(findForLogin: FindForLoginDto) {
         const { email, password } = findForLogin
         const user = await this.userModel.findOne({ email })
-        if (user) await user.populate('metaData')
-        // 
+        if (user) await user.populate('metaData', '+active_session')
+        // console.log(user)
         if (!user || user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with ${email} dont exists` }, HttpStatus.NOT_FOUND)
         if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with ${email} is suspended` }, HttpStatus.FORBIDDEN)
         if (!bycrypt.compareSync(password, user.password)) throw new HttpException({ message: `Invalid password` }, HttpStatus.UNAUTHORIZED)
         const token = await this.jwtService.signAsync({ id: user._id });
+        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: token } });
         return { message: `User with ${email} logged in`, id: user._id, token }
 
     }
@@ -309,12 +313,12 @@ export class UsersService {
             const languageMatch = language?.length ? language.includes(user.profile.language) : false;
             const smokingMatch = smoking?.length ? smoking.includes(user.profile.smoking) : false;
             const typeOfRelationFindMatch = typeOfRelationFind?.length ? typeOfRelationFind.includes(user.profile.typeOfRelationFind) : false;
-            let userDistance = -1 ; 
+            let userDistance = -1;
             if (selfLocation && user.profile.geoLocations) {
                 userDistance = HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
             }
             let distanceMatch = distance ? (userDistance <= distance) : false;
-            if(!selfLocation) distanceMatch = false;
+            if (!selfLocation) distanceMatch = false;
 
             const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
 
@@ -412,7 +416,7 @@ export class UsersService {
         await selfUser.populate('profile');
 
         const isPremium = await this.paymentService.isPremiumUser(selfUser.inc_id);
-        
+
 
         if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with id ${id} was deleted` }, HttpStatus.NOT_FOUND);
         if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with id ${id} is suspended` }, HttpStatus.FORBIDDEN);
@@ -439,9 +443,16 @@ export class UsersService {
                 typeOfRelationFind: user.profile.typeOfRelationFind,
                 lastConnection: user.metaData.lastConnection,
                 ...(solicitud ? { solicitud: solicitud.status } : {}),
-                ...((isPremium && solicitud && solicitud.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone , networks: user.profile.socialNetworks } : {}),
+                ...((isPremium && solicitud && solicitud.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone, networks: user.profile.socialNetworks } : {}),
             }
         };
+    }
+
+    async logOut(id: string) {
+        const user = await this.userModel.findById(id);
+        if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
+        await user.populate('metaData', '+active_session');
+        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" } });
     }
 
 }

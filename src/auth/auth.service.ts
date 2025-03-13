@@ -11,6 +11,7 @@ import { OtpPassRecoveryDto } from './dto/otp-pass-recovery.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfirmPassRecoveryDto } from './dto/confir-pass-recovery.dto';
 
+
 @Injectable()
 export class AuthService {
 
@@ -65,5 +66,10 @@ export class AuthService {
 
         const token = await this.jwtService.signAsync({ id: user._id });
         return { message: `Código válido`, token: token, id: user._id };
+    }
+
+    async logout(id: string) {
+        await this.usersService.logOut(id);
+        return { message: `Logged out`};
     }
 }

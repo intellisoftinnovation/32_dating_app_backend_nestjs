@@ -15,10 +15,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromHeader('token'),
       ignoreExpiration: false,
       secretOrKey: envs.JWTSECRET,
+      passReqToCallback: true
     });
   }
 
-  async validate(payload: ItJwtPayload) {
+  async validate(request: any, payload: ItJwtPayload) {
+    const token = request.headers['token'];
 
     const user = await this.userService.findOneForJwtStragety(payload.id);
     if (!user || user.metaData.accountStatus === AccountStatus.DELETED) throw new HttpException({
@@ -30,6 +32,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       message: 'Account is suspended',
       details: 'User Inactive'
     }, HttpStatus.FORBIDDEN)
+
+    console.log(user.metaData.active_session, '\n', ExtractJwt.fromHeader('token').toString())
+
+    if (user.metaData.active_session !== token) throw new HttpException({message: 'This session is closed.'}, HttpStatus.NOT_ACCEPTABLE)
 
     return user
   }

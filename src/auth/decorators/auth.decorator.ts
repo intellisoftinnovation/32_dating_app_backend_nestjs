@@ -11,6 +11,7 @@ export const Auth = (...privileges: ItPrivileges[]) => {
         ApiResponse({ status: 401 }),
         ApiResponse({ status: 400 }),
         ApiResponse({ status: 403 }),
+        ApiResponse({ status: 406 , description:"This session is closed."}),
         PrivilegesProtected(...privileges),
         UseGuards(AuthGuard(), UserPrivilegesGuard)
     )
