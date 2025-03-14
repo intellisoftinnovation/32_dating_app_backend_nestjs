@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { envs } from './config';
 import { UsersModule } from './users/users.module';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE, Reflector } from '@nestjs/core';
 import { CustomValidationPipe } from './Pipes/CustomValidationPipe';
 import { QueryFailedFilter } from './Pipes/query-failed-exception.filter';
 import { DatabaseConnectionExceptionFilter } from './Pipes/database-connection-exception.filter.ts';
@@ -12,6 +12,7 @@ import { KycModule } from './kyc/kyc.module';
 import { MatchRequestModule } from './match-request/match-request.module';
 import { PaymentModule } from './payment/payment.module';
 import { PlanModule } from './plan/plan.module';
+import { RateLimitInterceptor } from './common/interceptors/rate-limit.interceptor';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { PlanModule } from './plan/plan.module';
     KycModule,
     MatchRequestModule,
     PaymentModule,
-    PlanModule,
+    PlanModule
   ],
   providers: [
     {
@@ -37,6 +38,11 @@ import { PlanModule } from './plan/plan.module';
       provide: APP_FILTER,
       useClass: QueryFailedFilter,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useFactory: (reflector: Reflector) => new RateLimitInterceptor(reflector),
+      inject: [Reflector]
+    }
   ]
 })
 export class AppModule { }

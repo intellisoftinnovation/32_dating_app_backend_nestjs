@@ -33,8 +33,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       details: 'User Inactive'
     }, HttpStatus.FORBIDDEN)
 
-    console.log(user.metaData.active_session, '\n', ExtractJwt.fromHeader('token').toString())
-
     if (user.metaData.active_session !== token) throw new HttpException({message: 'This session is closed.'}, HttpStatus.NOT_ACCEPTABLE)
 
     return user

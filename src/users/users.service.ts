@@ -18,6 +18,8 @@ import { HaverSine } from 'src/tools/HAVERSINE';
 import { MatchRequestService } from 'src/match-request/match-request.service';
 import { PaymentService } from 'src/payment/payment.service';
 import { MatchRequestStatus } from 'src/match-request/schemas/match-request.schema';
+import { Complaint } from './schemas/complaint.schema';
+import { CreateComplaintDto } from './dto/create-complaint.dto';
 
 
 
@@ -29,6 +31,7 @@ export class UsersService {
         @InjectModel(MetaData.name) private readonly metaDataModel: Model<MetaData>,
         @InjectModel(Profile.name) private readonly profileModel: Model<Profile>,
         @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
+        @InjectModel(Complaint.name) private readonly complaintModel: Model<Complaint>,
         @Inject(forwardRef(() => PaymentService)) private readonly paymentService: PaymentService,
         @Inject(forwardRef(() => MatchRequestService)) private readonly matchRequestService: MatchRequestService,
         private readonly jwtService: JwtService
@@ -43,7 +46,7 @@ export class UsersService {
         await this.userModel.findByIdAndUpdate(user._id, { metaData: metaData._id, profile: profile._id });
 
         const token = await this.jwtService.signAsync({ id: user._id });
-
+        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: token } });
         return { message: 'User created', id: user._id, token };
     }
 
@@ -102,7 +105,7 @@ export class UsersService {
 
         if (language) await this.profileModel.updateOne({ _id: user.profile }, { $set: { language } });
         if (photos) {
-            if(photos.length > 6) throw new HttpException({ message: `You can only to have 6 photos`}, HttpStatus.BAD_REQUEST)
+            if (photos.length > 6) throw new HttpException({ message: `You can only to have 6 photos` }, HttpStatus.BAD_REQUEST)
             await this.profileModel.updateOne({ _id: user.profile }, { $set: { photos } })
         }
         if (socialNetworks) await this.profileModel.updateOne({ _id: user.profile }, { $set: { socialNetworks } });
@@ -453,6 +456,17 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
         await user.populate('metaData', '+active_session');
         await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" } });
+    }
+
+    async createComplaint(createComplaintDto: CreateComplaintDto, idInToken: string) {
+        const user = await this.userModel.findById(idInToken);
+        if (!user) throw new HttpException({ message: `User with id ${idInToken} not found` }, HttpStatus.NOT_FOUND);
+
+        const subject = await this.userModel.findById(createComplaintDto.subject);
+        if (!subject) throw new HttpException({ message: `User with id ${createComplaintDto.subject} not found` }, HttpStatus.NOT_FOUND);
+        
+        const complaint = await this.complaintModel.create({ owner: user._id, subjet: subject._id, description: createComplaintDto.description });
+        return { message: "Complaint created", id: complaint._id };
     }
 
 }

@@ -6,6 +6,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { UserDocument } from 'src/users/schemas/user.schema';
 import { ApiTags, ApiConsumes, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 
 @ApiTags('Files')
 @Controller('files')
@@ -33,6 +34,7 @@ export class FilesController {
       },
     },
   })
+  @RateLimit(10, 60*1000)
   create(@UploadedFile() file: Express.Multer.File, @Req() req: Express.Request, @GetUser() user: UserDocument) {
 
     if (req.errors) {

@@ -8,6 +8,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterImg } from 'src/files/helpers/fileFilters.helpers';
 import { FacePlusVerifyCode } from './helpers/face-plus-gender-verify';
 import { PhoneVerifyDto } from './dto/phone-verify.dto';
+import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 
 
 @Controller('kyc')
@@ -46,6 +47,7 @@ export class KycController {
       verified: false
     }
   })
+  @RateLimit(4, 60*1000)
   async genderVerify(@UploadedFile() file: Express.Multer.File, @Req() req: Express.Request, @GetUser() user: UserDocument) {
 
     if (req.errors) {
@@ -63,6 +65,7 @@ export class KycController {
 
   @Get('phoneVerify')
   @Auth()
+  @RateLimit(3, 60*1000)
   async phoneVerifyRequest(@GetUser() user: UserDocument) {
     return this.kycService.phoneVerifyRequest(user);
   }

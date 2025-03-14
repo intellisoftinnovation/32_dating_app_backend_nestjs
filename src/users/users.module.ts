@@ -11,18 +11,21 @@ import { PreferencesController } from './preferences.controller';
 import { Preference, PreferenceSchema } from './schemas/preferences-schema';
 import { MatchRequestModule } from 'src/match-request/match-request.module';
 import { PaymentModule } from 'src/payment/payment.module';
+import { Complaint, ComplaintSchema } from './schemas/complaint.schema';
+import { ComplaintController } from './complaint.controller';
 @Module({
   imports: [MongooseModule.forFeature([
     { name: User.name, schema: UserSchema },
     { name: Profile.name, schema: ProfileSchema },
     { name: MetaData.name, schema: MetaDataSchema },
-    { name: Preference.name, schema: PreferenceSchema }
+    { name: Preference.name, schema: PreferenceSchema },
+    { name: Complaint.name, schema: ComplaintSchema },
   ]),
   forwardRef(() => AuthModule),
   forwardRef(() => MatchRequestModule), 
   forwardRef(() => PaymentModule),
   ],
-  controllers: [UsersController, PreferencesController],
+  controllers: [UsersController, PreferencesController, ComplaintController],
   providers: [UsersService],
   exports: [UsersService]
 })
