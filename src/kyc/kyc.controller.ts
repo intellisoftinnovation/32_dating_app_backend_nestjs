@@ -9,6 +9,7 @@ import { fileFilterImg } from 'src/files/helpers/fileFilters.helpers';
 import { FacePlusVerifyCode } from './helpers/face-plus-gender-verify';
 import { PhoneVerifyDto } from './dto/phone-verify.dto';
 import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
+import { PictureVerifyDto } from './dto/picture-verify.dto';
 
 
 @Controller('kyc')
@@ -47,7 +48,7 @@ export class KycController {
       verified: false
     }
   })
-  @RateLimit(4, 60*1000)
+  @RateLimit(4, 60 * 1000)
   async genderVerify(@UploadedFile() file: Express.Multer.File, @Req() req: Express.Request, @GetUser() user: UserDocument) {
 
     if (req.errors) {
@@ -63,9 +64,69 @@ export class KycController {
     return this.kycService.genderVerify(file, user);
   }
 
+  @Post('picture_verify')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: fileFilterImg,
+  }))
+  @ApiBody({
+    description: 'Picture verification with file and coordinates for the verification rectangle',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary', // Indica que se espera un archivo
+        },
+        x: {
+          type: 'number',
+          description: 'The x-coordinate of the rectangle for the picture verification',
+        },
+        y: {
+          type: 'number',
+          description: 'The y-coordinate of the rectangle for the picture verification',
+        },
+        rectangle_width: {
+          type: 'number',
+          description: 'The width of the rectangle for the picture verification',
+        },
+        rectangle_height: {
+          type: 'number',
+          description: 'The height of the rectangle for the picture verification',
+        },
+        deep: {
+          type: 'string',
+          enum: ['beta', 'pro'],
+          description: 'The deep of the picture verification',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully verified picture',
+  })
+  async pictureVerify(
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Express.Request,
+    @Body() pictureVerifyDto: PictureVerifyDto
+  ) {
+    if (req.errors) {
+      throw new HttpException({ message: req.errors.message }, req.errors.status);
+    }
+
+    if (!file) {
+      throw new HttpException({ message: 'The file is required [file]' }, HttpStatus.BAD_REQUEST);
+    }
+
+    // TODO: Add file size validation
+
+    return this.kycService.pictureVerify(file, pictureVerifyDto);
+  }
+
   @Get('phoneVerify')
   @Auth()
-  @RateLimit(3, 60*1000)
+  @RateLimit(3, 60 * 1000)
   async phoneVerifyRequest(@GetUser() user: UserDocument) {
     return this.kycService.phoneVerifyRequest(user);
   }
