@@ -76,7 +76,7 @@ export class KycController {
       properties: {
         file: {
           type: 'string',
-          format: 'binary', // Indica que se espera un archivo
+          format: 'binary', // Indica que se espera un archivo  
         },
         x: {
           type: 'number',
