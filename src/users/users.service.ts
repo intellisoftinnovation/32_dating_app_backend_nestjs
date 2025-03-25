@@ -20,6 +20,8 @@ import { PaymentService } from 'src/payment/payment.service';
 import { MatchRequestStatus } from 'src/match-request/schemas/match-request.schema';
 import { Complaint } from './schemas/complaint.schema';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
+import { FindAllComplaintsDto } from './dto/find-all-complaint.dto';
+import { UpdateComplaintDto } from './dto/update-complaint.dto';
 
 
 
@@ -458,15 +460,44 @@ export class UsersService {
         await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" } });
     }
 
+
     async createComplaint(createComplaintDto: CreateComplaintDto, idInToken: string) {
         const user = await this.userModel.findById(idInToken);
         if (!user) throw new HttpException({ message: `User with id ${idInToken} not found` }, HttpStatus.NOT_FOUND);
 
         const subject = await this.userModel.findById(createComplaintDto.subject);
         if (!subject) throw new HttpException({ message: `User with id ${createComplaintDto.subject} not found` }, HttpStatus.NOT_FOUND);
-        
+
         const complaint = await this.complaintModel.create({ owner: user._id, subjet: subject._id, description: createComplaintDto.description });
         return { message: "Complaint created", id: complaint._id };
+    }
+
+    async getAllComplaints(findAllComplaintsDto: FindAllComplaintsDto) {
+        const { status, page, size } = findAllComplaintsDto
+        const records = await this.complaintModel.countDocuments(status ? { status } : {});
+
+        const complaints = await this.complaintModel.find(status ? { status } : {}).skip((page - 1) * size).limit(size).populate('owner', 'name').populate('subjet', 'name');
+
+        const metadata = {
+            records: records,
+            frame: page,
+            frameSize: size,
+            lastFrame: Math.ceil(records / size),
+        };
+
+        return {
+            data: complaints,
+            metadata,
+        }
+    }
+
+    async updateComplaint(id: string, updateComplaintDto: UpdateComplaintDto) {
+        const complaint = await this.complaintModel.findOne({ _id: id });
+        const {status} = updateComplaintDto;
+        if (!complaint) throw new HttpException({ message: `Complaint with Id ${id}` }, HttpStatus.NOT_FOUND);
+
+        await this.complaintModel.findByIdAndUpdate(id, { $set: { status } });
+        return { message: "Complaint updated", id: complaint._id };
     }
 
 }

@@ -8,7 +8,6 @@ export enum ComplaintStatus {
   PENDING   = "PENDING",
   IN_REVIEW = "IN_REVIEW", 
   SOLVED    = "SOLVED"
-  
 }
 
 @Schema({timestamps: true})
