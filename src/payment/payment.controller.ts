@@ -1,4 +1,4 @@
-import { Body, Controller,Param,Post } from '@nestjs/common';
+import { Body, Controller,Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -13,12 +13,6 @@ export class PaymentController {
   async subscribe(@Body() data:any) {
     return this.paymentService.subscribeHook(data);
   }
-
-  // @Post('test/:q')
-  async test(@Param('q') idInToken: string) {
-    return this.paymentService.test(idInToken);
-  }
-
 
   @Post('newSubscription')
   @Auth()

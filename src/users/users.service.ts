@@ -385,7 +385,6 @@ export class UsersService {
 
     }
 
-
     async refreshMatchHot(update: { count: number, to: mongoose.Types.ObjectId, profileID: mongoose.Types.ObjectId }[]) {
         console.log(update);
         const bulkOps = update.map(u => ({
@@ -460,7 +459,7 @@ export class UsersService {
         await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" } });
     }
 
-
+    // Complaint
     async createComplaint(createComplaintDto: CreateComplaintDto, idInToken: string) {
         const user = await this.userModel.findById(idInToken);
         if (!user) throw new HttpException({ message: `User with id ${idInToken} not found` }, HttpStatus.NOT_FOUND);
@@ -493,11 +492,43 @@ export class UsersService {
 
     async updateComplaint(id: string, updateComplaintDto: UpdateComplaintDto) {
         const complaint = await this.complaintModel.findOne({ _id: id });
-        const {status} = updateComplaintDto;
+        const { status } = updateComplaintDto;
         if (!complaint) throw new HttpException({ message: `Complaint with Id ${id}` }, HttpStatus.NOT_FOUND);
 
         await this.complaintModel.findByIdAndUpdate(id, { $set: { status } });
         return { message: "Complaint updated", id: complaint._id };
+    }
+
+    // Stats 
+    async getStats() {    
+        const users= await this.userModel.find({}).select("inc_id");
+        const  ids = users.map(u => u.inc_id);
+        const premiumCount = new Set();
+        const allSubscriptions  = await this.paymentService.getAllSubscriptions();
+        let monthlyMoney = 0;
+        for(let i= 0; i < allSubscriptions.length; i++){
+            const subscription = allSubscriptions[i];
+            if(subscription.status === "authorized" && ids.includes(subscription.external_reference.toString()) ){
+                premiumCount.add(subscription.external_reference.toString());
+                if(subscription.auto_recurring && subscription.auto_recurring.transaction_amount){
+                    monthlyMoney += subscription.auto_recurring.transaction_amount;
+                }
+            }
+        }
+        const history = [];
+        try{
+            const data = await this.paymentService.Reportes();
+            if(data) history.push(...data);
+        }catch{
+            console.log("Error al obtener los datos")
+        }
+
+        return {
+            Total: users.length, 
+            premium: premiumCount.size, 
+            monthlyMoney, 
+            history  
+        }
     }
 
 }

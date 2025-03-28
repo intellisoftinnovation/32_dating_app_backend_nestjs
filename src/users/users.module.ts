@@ -13,6 +13,7 @@ import { MatchRequestModule } from 'src/match-request/match-request.module';
 import { PaymentModule } from 'src/payment/payment.module';
 import { Complaint, ComplaintSchema } from './schemas/complaint.schema';
 import { ComplaintController } from './complaint.controller';
+import { StatsController } from './stats.controller';
 @Module({
   imports: [MongooseModule.forFeature([
     { name: User.name, schema: UserSchema },
@@ -25,7 +26,7 @@ import { ComplaintController } from './complaint.controller';
   forwardRef(() => MatchRequestModule), 
   forwardRef(() => PaymentModule),
   ],
-  controllers: [UsersController, PreferencesController, ComplaintController],
+  controllers: [UsersController, PreferencesController, ComplaintController, StatsController],
   providers: [UsersService],
   exports: [UsersService]
 })
