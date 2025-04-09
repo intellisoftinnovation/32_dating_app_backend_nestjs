@@ -16,7 +16,7 @@ export class PaymentController {
 
   @Post('newSubscription')
   @Auth()
-  async newSubscription(@Body() createSubscriptionDto: CreateSubscriptionDto, @GetUser('inc_id') idInToken: string) {
+  async newSubscription(@Body() createSubscriptionDto: CreateSubscriptionDto, @GetUser('_id') idInToken: string) {
     return this.paymentService.newSubscription(createSubscriptionDto , idInToken);
   }
 

@@ -33,8 +33,8 @@ export class PaymentService {
             body: {
                 status: "pending",
                 // TODO: Add User Email !!
-                payer_email: ``,
-                back_url: "https://processors-nobody-mortality-tuner.trycloudflare.com/api/0.0.1/payment/subcribehook",
+                payer_email: `test_user_1415234644@testuser.com`,
+                back_url: "https://chamoy.lat",
                 reason: plan.reason,
                 auto_recurring: {
                     frequency: plan.frequency,
@@ -42,7 +42,7 @@ export class PaymentService {
                     transaction_amount: plan.transaction_amount,
                     currency_id: plan.currency_id
                 },
-                external_reference: `${idInToken}`,
+                external_reference: `${user.inc_id}`,
             }
         });
 
