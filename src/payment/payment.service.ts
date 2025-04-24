@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { MercadoPagoConfig, PreApproval, Payment } from 'mercadopago';
 import { envs } from 'src/config';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -6,6 +6,16 @@ import { PlanService } from 'src/plan/plan.service';
 import { PreApprovalResults } from 'mercadopago/dist/clients/preApproval/search/types';
 import { UsersService } from 'src/users/users.service';
 import { AutoRecurringWithFreeTrial } from 'mercadopago/dist/clients/preApproval/commonTypes';
+import { PreApprovalUpdateResponse } from 'mercadopago/dist/clients/preApproval/update/types';
+
+
+export interface GetSubcriptionResult {
+    subscription: PreApprovalResults;
+    expirationDate: Date;
+    years: number;
+    months: number;
+    days: number
+}
 
 @Injectable()
 export class PaymentService {
@@ -67,7 +77,7 @@ export class PaymentService {
         const preApproval = new PreApproval(this.client);
         const LIMIT = 100;
         let offset = 0;
-        let resultsArray: PreApprovalResults[] = [];
+        let resultsArray: PreApprovalResults[];
 
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -187,7 +197,6 @@ export class PaymentService {
         do {
             const results = await preApproval.search({
                 options: {
-                    status: "authorized",
                     limit: LIMIT,
                     offset: offset
                 }
@@ -198,7 +207,10 @@ export class PaymentService {
 
             results.results.forEach(element => {
                 if (element.external_reference.toString() === idInToken) {
-                    premium = true;
+                    const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
+                    if (element.status === "authorized" || ((days || months || years) && element.status === 'cancelled')) {
+                        premium = true;
+                    }
                 }
             });
 
@@ -219,13 +231,13 @@ export class PaymentService {
         let offset = 0;
         let premium = false;
         let resultsArray: any[] = [];
-        let subscription: PreApprovalResults;
+        const subscription: GetSubcriptionResult[] = [];
         const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-        const user  = await this.usersService.getUserById(idInToken);
+        const user = await this.usersService.getUserById(idInToken);
         do {
             const results = await preApproval.search({
                 options: {
-                    status: "authorized",
+                    // status: "authorized",
                     limit: LIMIT,
                     offset: offset
                 }
@@ -236,8 +248,16 @@ export class PaymentService {
 
             results.results.forEach(element => {
                 if (element.external_reference.toString() === user.inc_id) {
-                    subscription = element;
-                    premium = true;
+                    const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
+                    const expirationDate = this.calculateExpirationDate(
+                        element.next_payment_date,
+                        element.date_created,
+                        element.auto_recurring,
+                    );
+                    if (element.status === "authorized" || ((days || months || years) && element.status === 'cancelled')) {
+                        subscription.push({subscription:element ,days , months, years, expirationDate });
+                        premium = true;
+                    }
                 }
             });
 
@@ -248,24 +268,34 @@ export class PaymentService {
             if (!premium) await delay(500);
             // console.log(`Fetching next ${LIMIT} results...`);
         } while (!premium);
-        
-        if(!premium){
-            return {message: "No Subscription Found", subscription: null};
-        }else{
-            console.log(subscription)
-            const expirationDate = this.calculateExpirationDate(
-                subscription.next_payment_date,
-                subscription.date_created,
-                subscription.auto_recurring,
-            );
-            const remainingTime = this.calculateRemainingTime(expirationDate);
 
-            return {message: "Subscription Found", id: subscription.id, expirationDate, remainingTime};
+        if (!premium) {
+            return { message: "No Subscription Found", subscription: null };
+        } else {
+            return { message: "Subscription Found", subscription};
         }
     }
 
     async subscribeHook(data: any) {
         console.log(data);
+    }
+
+
+    async cancelSubscription(id_subscription: string) {
+        try {
+            const preApproval = new PreApproval(this.client);
+            const results: PreApprovalUpdateResponse = await preApproval.update({
+                id: id_subscription,
+                body: {
+                    status: "cancelled",
+                },
+            });
+
+            return { message: "Subscription Cancelled", id: results.id };
+        } catch (error) {
+            console.log(error);
+            throw new HttpException({ message: 'No podemos cancelar su subscripción en este momento', error }, HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
 

@@ -440,6 +440,7 @@ export class UsersService {
                 englishLevel: user.profile.englishLevel,
                 familySituation: user.profile.familySituation,
                 distance,
+                geolocation: user.profile.geoLocations,
                 language: user.profile.language,
                 photos: user.profile.photos,
                 ...(user.profile.gender == Gender.MALE ? { profit: user.profile.profit } : {}),
