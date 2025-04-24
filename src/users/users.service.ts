@@ -459,6 +459,14 @@ export class UsersService {
         await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" } });
     }
 
+    async deleteUser(idInToken: string) {
+        const user = await this.userModel.findById(idInToken);
+        if (!user) throw new HttpException({ message: `User ${idInToken} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
+        await user.populate('metaData');
+        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" , accountStatus: AccountStatus.DELETED } });
+        return {message: 'Account was Deleted'}
+    }
+
     // Complaint
     async createComplaint(createComplaintDto: CreateComplaintDto, idInToken: string) {
         const user = await this.userModel.findById(idInToken);
@@ -500,34 +508,34 @@ export class UsersService {
     }
 
     // Stats 
-    async getStats() {    
-        const users= await this.userModel.find({}).select("inc_id");
-        const  ids = users.map(u => u.inc_id);
+    async getStats() {
+        const users = await this.userModel.find({}).select("inc_id");
+        const ids = users.map(u => u.inc_id);
         const premiumCount = new Set();
-        const allSubscriptions  = await this.paymentService.getAllSubscriptions();
+        const allSubscriptions = await this.paymentService.getAllSubscriptions();
         let monthlyMoney = 0;
-        for(let i= 0; i < allSubscriptions.length; i++){
+        for (let i = 0; i < allSubscriptions.length; i++) {
             const subscription = allSubscriptions[i];
-            if(subscription.status === "authorized" && ids.includes(subscription.external_reference.toString()) ){
+            if (subscription.status === "authorized" && ids.includes(subscription.external_reference.toString())) {
                 premiumCount.add(subscription.external_reference.toString());
-                if(subscription.auto_recurring && subscription.auto_recurring.transaction_amount){
+                if (subscription.auto_recurring && subscription.auto_recurring.transaction_amount) {
                     monthlyMoney += subscription.auto_recurring.transaction_amount;
                 }
             }
         }
         const history = [];
-        try{
+        try {
             const data = await this.paymentService.Reportes();
-            if(data) history.push(...data);
-        }catch{
+            if (data) history.push(...data);
+        } catch {
             console.log("Error al obtener los datos")
         }
 
         return {
-            Total: users.length, 
-            premium: premiumCount.size, 
-            monthlyMoney, 
-            history  
+            Total: users.length,
+            premium: premiumCount.size,
+            monthlyMoney,
+            history
         }
     }
 

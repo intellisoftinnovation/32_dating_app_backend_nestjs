@@ -34,7 +34,7 @@ export class FilesController {
       },
     },
   })
-  @RateLimit(10, 60*1000)
+  @RateLimit(100, 60*1000)
   create(@UploadedFile() file: Express.Multer.File, @Req() req: Express.Request, @GetUser() user: UserDocument) {
 
     if (req.errors) {

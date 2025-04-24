@@ -33,8 +33,6 @@ export class AuthService {
         const user = await this.usersService.findForPassRecovery(email)
         if (!user.profile.phone) throw new HttpException({ message: 'Phone not found' }, HttpStatus.PRECONDITION_FAILED);
 
-
-
         const path = EncryptionService.encrypt(user._id.toString());
 
         if (envs.ERRORLOGS) console.log(path, user._id.toString(), EncryptionService.decrypt(path))

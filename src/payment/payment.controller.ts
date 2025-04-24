@@ -1,4 +1,4 @@
-import { Body, Controller,Post } from '@nestjs/common';
+import { Body, Controller,Get,Post } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -20,8 +20,9 @@ export class PaymentController {
     return this.paymentService.newSubscription(createSubscriptionDto , idInToken);
   }
 
-  
-  
-
-
+  @Get('getSubscription')
+  @Auth()
+  async getSubscription(@GetUser('_id') idInToken: string) {
+    return this.paymentService.getSubscription(idInToken);
+  }
 }

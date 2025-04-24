@@ -14,7 +14,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Post('login')
-  @RateLimit(4, 60*1000)
+  @RateLimit(40, 60*1000)
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: HttpStatus.OK })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
@@ -26,7 +26,7 @@ export class AuthController {
   }
 
   @Post('register')
-  @RateLimit(3, 60*1000)
+  @RateLimit(30, 60*1000)
   @ApiResponse({ status: HttpStatus.CREATED })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
   @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Email already exists' })
@@ -35,7 +35,7 @@ export class AuthController {
   }
 
   @Post('wantpassrecovery')
-  @RateLimit(2, 60*1000)
+  @RateLimit(20, 60*1000)
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -50,14 +50,14 @@ export class AuthController {
   }
 
   @Post('confirmpassrecovery')
-  @RateLimit(2, 60*1000)
+  @RateLimit(20, 60*1000)
   @HttpCode(HttpStatus.OK)
   confirmPassRecovery(@Body() confirmPassRecoveryDto: ConfirmPassRecoveryDto) {
     return this.authService.confirmPassRecovery(confirmPassRecoveryDto);
   }
 
   @Post('otppassrecovery')
-  @RateLimit(2, 60*1000)
+  @RateLimit(20, 60*1000)
   @HttpCode(HttpStatus.OK)
   otpPassRecovery(@Body() otpPassRecoveryDto: OtpPassRecoveryDto) {
     return this.authService.otpPassRecovery(otpPassRecoveryDto);

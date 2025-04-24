@@ -5,6 +5,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { PlanService } from 'src/plan/plan.service';
 import { PreApprovalResults } from 'mercadopago/dist/clients/preApproval/search/types';
 import { UsersService } from 'src/users/users.service';
+import { AutoRecurringWithFreeTrial } from 'mercadopago/dist/clients/preApproval/commonTypes';
 
 @Injectable()
 export class PaymentService {
@@ -167,7 +168,7 @@ export class PaymentService {
         // }, {});
 
         // // Convertimos los valores del objeto en un array
-        
+
         // return pagosPorUsuario;
         return Object.values(resumenMensual);
 
@@ -212,7 +213,103 @@ export class PaymentService {
         return premium;
     }
 
+    async getSubscription(idInToken: string) {
+        const preApproval = new PreApproval(this.client);
+        const LIMIT = 100;
+        let offset = 0;
+        let premium = false;
+        let resultsArray: any[] = [];
+        let subscription: PreApprovalResults;
+        const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        const user  = await this.usersService.getUserById(idInToken);
+        do {
+            const results = await preApproval.search({
+                options: {
+                    status: "authorized",
+                    limit: LIMIT,
+                    offset: offset
+                }
+            });
+
+            // console.log(results);
+            resultsArray = resultsArray.concat(results.results);
+
+            results.results.forEach(element => {
+                if (element.external_reference.toString() === user.inc_id) {
+                    subscription = element;
+                    premium = true;
+                }
+            });
+
+            if (results.results.length < LIMIT) break;
+
+            offset += LIMIT;
+
+            if (!premium) await delay(500);
+            // console.log(`Fetching next ${LIMIT} results...`);
+        } while (!premium);
+        
+        if(!premium){
+            return {message: "No Subscription Found", subscription: null};
+        }else{
+            console.log(subscription)
+            const expirationDate = this.calculateExpirationDate(
+                subscription.next_payment_date,
+                subscription.date_created,
+                subscription.auto_recurring,
+            );
+            const remainingTime = this.calculateRemainingTime(expirationDate);
+
+            return {message: "Subscription Found", id: subscription.id, expirationDate, remainingTime};
+        }
+    }
+
     async subscribeHook(data: any) {
         console.log(data);
     }
+
+
+    private calculateExpirationDate(
+        nextPaymentDate: number | undefined,
+        dateCreated: number | undefined,
+        autoRecurring: AutoRecurringWithFreeTrial | undefined,
+    ): Date | null {
+        if (nextPaymentDate) {
+            return new Date(nextPaymentDate);
+        }
+
+        if (dateCreated && autoRecurring) {
+            const startDate = new Date(dateCreated);
+            const { frequency, frequency_type } = autoRecurring;
+
+            switch (frequency_type) {
+                case "months":
+                    return new Date(startDate.getFullYear(), startDate.getMonth() + frequency, startDate.getDate());
+                case "days":
+                    return new Date(startDate.getTime() + frequency * 24 * 60 * 60 * 1000);
+                case "years":
+                    return new Date(startDate.getFullYear() + frequency, startDate.getMonth(), startDate.getDate());
+                default:
+                    console.warn(`Tipo de frecuencia desconocido: ${frequency_type}`);
+                    return null;
+            }
+        }
+
+        return null;
+    }
+
+    private calculateRemainingTime(expirationDate: Date | null): { years: number; months: number; days: number } | null {
+        if (!expirationDate) return null;
+
+        const now = new Date();
+        const diffMs = expirationDate.getTime() - now.getTime();
+        const diffDays = Math.max(Math.floor(diffMs / (1000 * 60 * 60 * 24)), 0);
+
+        return {
+            years: Math.floor(diffDays / 365),
+            months: Math.floor((diffDays % 365) / 30),
+            days: diffDays % 30,
+        };
+    }
+
 }
