@@ -111,8 +111,8 @@ export class Profile {
     @Prop({ type: String , enum: Object.values(TypeOfRelationFind)})
     typeOfRelationFind: TypeOfRelationFind;
 
-    @Prop({ type: String, enum: Object.values(Language)})
-    language: Language;
+    @Prop({ type: [String], enum: Object.values(Language)})
+    language: Language[];
 
     @Prop({ type: String, enum: Object.values(FamilySituation)})
     familySituation: FamilySituation;

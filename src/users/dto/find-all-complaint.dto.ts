@@ -1,5 +1,5 @@
 import { PaginationDto } from "src/common/dto/pagination.dto";
-import { ComplaintStatus } from "../schemas/complaint.schema";
+import { ComplaintStatus, ComplaintType } from "../schemas/complaint.schema";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { IsEnum, IsOptional } from "class-validator";
 
@@ -8,5 +8,10 @@ export class FindAllComplaintsDto extends PaginationDto {
     @IsEnum(ComplaintStatus)
     @ApiPropertyOptional({ enum: ComplaintStatus })
     status: ComplaintStatus
+
+    @IsOptional()
+    @IsEnum(ComplaintStatus)
+    @ApiPropertyOptional({enum: ComplaintType})
+    type: ComplaintType
 }
 

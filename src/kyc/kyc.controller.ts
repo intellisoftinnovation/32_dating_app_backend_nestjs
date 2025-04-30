@@ -10,6 +10,8 @@ import { FacePlusVerifyCode } from './helpers/face-plus-gender-verify';
 import { PhoneVerifyDto } from './dto/phone-verify.dto';
 import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
 import { PictureVerifyDto } from './dto/picture-verify.dto';
+import { VerifyWithPhoneDto } from './dto/verify-with-phone.dto';
+import { CheckCodeWithPhoneDto } from './dto/check-code-with-phone.dto';
 
 
 @Controller('kyc')
@@ -136,6 +138,21 @@ export class KycController {
   @HttpCode(HttpStatus.OK)
   async phoneVerify(@GetUser() user: UserDocument, @Body() phoneVerifyDto: PhoneVerifyDto) {
     return this.kycService.phoneVerify(user, phoneVerifyDto.code);
+  }
+
+
+  @Post('verifyWithPhone')
+  @Auth()
+  async verifyWithPhone(@Body() verifyWithPhoneDto: VerifyWithPhoneDto) {
+    const { phone } = verifyWithPhoneDto;
+    return this.kycService.verifyWithPhone(phone);
+  }
+
+  @Post('checkCodeWithPhone')
+  @Auth()
+  async checkCodeWithPhone(@Body() checkCodeWithPhoneDto: CheckCodeWithPhoneDto) {
+    const { phone, code } = checkCodeWithPhoneDto;
+    return this.kycService.checkCodeWithPhone(phone, code);
   }
 
 

@@ -4,6 +4,13 @@ import { User } from './user.schema';
 
 export type ComplaintDocument = HydratedDocument<Complaint>;
 
+export enum ComplaintType { 
+  OTHER = "OTHER",
+  NSFW  = "NSFW", 
+  KYC   = "KYC", 
+  AGE   = "AGE"
+}
+
 export enum ComplaintStatus { 
   PENDING   = "PENDING",
   IN_REVIEW = "IN_REVIEW", 
@@ -20,6 +27,9 @@ export class Complaint {
 
   @Prop({type: String })
   description: string;
+
+  @Prop({ type: String, enum: Object.values(ComplaintType), default: ComplaintType.OTHER })
+  type: ComplaintType
 
   @Prop({ type: String, enum: Object.values(ComplaintStatus)})
   status: ComplaintStatus

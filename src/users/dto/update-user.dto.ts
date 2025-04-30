@@ -156,9 +156,10 @@ export class UpdateUserDto {
     smoking?: boolean;
 
     @IsOptional()
-    @IsEnum(Language)
-    @ApiProperty({ enum: Language })
-    language?: Language;
+    @IsEnum(Language,{each: true})
+    @IsArray()
+    @ApiProperty({ enum: Language , isArray: true })
+    language?: Language[];
 
     @IsOptional()
     @IsEnum(FamilySituation)

@@ -117,4 +117,24 @@ export class KycService {
 
         return { message: 'Phone verified', verified: true };
     }
+
+    async verifyWithPhone(phone: string) {
+        const totp = generateOTP({ phone })
+
+        console.log(totp)
+        const { send_status } = await sendSMS(phone, ` ${totp} es su código de verificación de Chamoy`)
+        if (envs.ERRORLOGS) console.log(send_status)
+
+        return { message: "Código enviado" }
+    }
+
+
+    async checkCodeWithPhone(phone: string, code: string) {
+        const isValid = verifyOTP({ phone }, code)
+
+        if (!isValid) {
+            return { message: 'Invalid code', verified: false };
+        }
+        return { message: 'Code verified', verified: true };
+    }
 }

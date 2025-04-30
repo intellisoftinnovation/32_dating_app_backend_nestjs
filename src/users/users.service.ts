@@ -315,7 +315,11 @@ export class UsersService {
             const englishLevelMatch = englishLevel?.length ? englishLevel.includes(user.profile.englishLevel) : false;
             const etnicidadMatch = etnicidad?.length ? etnicidad.includes(user.profile.etnicidad) : false;
             const familySituationMatch = familySituation?.length ? familySituation.includes(user.profile.familySituation) : false;
-            const languageMatch = language?.length ? language.includes(user.profile.language) : false;
+
+            const languageMatch = Array.isArray(user.profile.language)
+                ? user.profile.language.some(lang => language.includes(lang))
+                : language?.length ? language.includes(user.profile.language) : false;
+
             const smokingMatch = smoking?.length ? smoking.includes(user.profile.smoking) : false;
             const typeOfRelationFindMatch = typeOfRelationFind?.length ? typeOfRelationFind.includes(user.profile.typeOfRelationFind) : false;
             let userDistance = -1;
@@ -464,8 +468,8 @@ export class UsersService {
         const user = await this.userModel.findById(idInToken);
         if (!user) throw new HttpException({ message: `User ${idInToken} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('metaData');
-        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" , accountStatus: AccountStatus.DELETED } });
-        return {message: 'Account was Deleted'}
+        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "", accountStatus: AccountStatus.DELETED } });
+        return { message: 'Account was Deleted' }
     }
 
     // Complaint
@@ -476,15 +480,21 @@ export class UsersService {
         const subject = await this.userModel.findById(createComplaintDto.subject);
         if (!subject) throw new HttpException({ message: `User with id ${createComplaintDto.subject} not found` }, HttpStatus.NOT_FOUND);
 
-        const complaint = await this.complaintModel.create({ owner: user._id, subjet: subject._id, description: createComplaintDto.description });
+        const complaint = await this.complaintModel.create({ owner: user._id, subjet: subject._id, description: createComplaintDto.description, type: createComplaintDto.type });
         return { message: "Complaint created", id: complaint._id };
     }
 
     async getAllComplaints(findAllComplaintsDto: FindAllComplaintsDto) {
-        const { status, page, size } = findAllComplaintsDto
-        const records = await this.complaintModel.countDocuments(status ? { status } : {});
+        const { status, page, size, type } = findAllComplaintsDto
+        const records = await this.complaintModel.countDocuments(
+            type ? { type } : {},
+            status ? { status } : {}
+        );
 
-        const complaints = await this.complaintModel.find(status ? { status } : {}).skip((page - 1) * size).limit(size).populate('owner', 'name').populate('subjet', 'name');
+        const complaints = await this.complaintModel.find(
+            status ? { status } : {},
+            type ? { type } : {}
+        ).skip((page - 1) * size).limit(size).populate('owner', 'name').populate('subjet', 'name');
 
         const metadata = {
             records: records,
