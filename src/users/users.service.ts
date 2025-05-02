@@ -22,6 +22,8 @@ import { Complaint } from './schemas/complaint.schema';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
 import { FindAllComplaintsDto } from './dto/find-all-complaint.dto';
 import { UpdateComplaintDto } from './dto/update-complaint.dto';
+import { ComplaintAction, ComplaintActionDto } from './dto/complaint-action.dto';
+import { FirebaseAdminService } from 'src/helpers/firebase-admin.service';
 
 
 
@@ -35,6 +37,7 @@ export class UsersService {
         @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
         @InjectModel(Complaint.name) private readonly complaintModel: Model<Complaint>,
         @Inject(forwardRef(() => PaymentService)) private readonly paymentService: PaymentService,
+        @Inject(forwardRef(()=> FirebaseAdminService)) private readonly firebaseAdminService: FirebaseAdminService,
         @Inject(forwardRef(() => MatchRequestService)) private readonly matchRequestService: MatchRequestService,
         private readonly jwtService: JwtService
     ) { }
@@ -62,9 +65,9 @@ export class UsersService {
         return user;
     }
 
-    async updateUser(id: string, updateUserDto: UpdateUserDto & Partial<{ phoneVerified: boolean, genderVerified: boolean, }>) {
+    async updateUser(id: string, updateUserDto: UpdateUserDto & Partial<{ phoneVerified: boolean, genderVerified: boolean, accountStatus: AccountStatus, }>) {
 
-        const { name, email, englishLevel, etnicidad, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone, typeOfRelationFind, fcmToken, genderVerified, phoneVerified } = updateUserDto
+        const { name, email, englishLevel, accountStatus, etnicidad, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone, typeOfRelationFind, fcmToken, genderVerified, phoneVerified } = updateUserDto
 
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
@@ -96,6 +99,7 @@ export class UsersService {
         if (fcmToken) await this.profileModel.updateOne({ _id: user.profile }, { $set: { fcmToken } });
         if (genderVerified) await this.profileModel.updateOne({ _id: user.profile }, { $set: { genderVerified } });
         if (phoneVerified) await this.profileModel.updateOne({ _id: user.profile }, { $set: { phoneVerified } });
+        if (accountStatus) await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { accountStatus: accountStatus } });
 
 
         if (geoLocation) {
@@ -536,6 +540,31 @@ export class UsersService {
 
         await this.complaintModel.findByIdAndUpdate(id, { $set: { status } });
         return { message: "Complaint updated", id: complaint._id };
+    }
+
+    async actionComplaint(id: string, complaintActionDto: ComplaintActionDto) {
+        const { action } = complaintActionDto;
+        const user = await this.getUserById(id);
+
+        switch (action) {
+            case ComplaintAction.DELETE:
+                await this.deleteUser(id);
+                return { message: "User deleted", id: user._id };
+            case ComplaintAction.SUSPEND:
+                await this.updateUser(id, { accountStatus: AccountStatus.SUSPENDED });
+                return { message: "User suspended", id: user._id };
+            case ComplaintAction.VERIFY_GENDER:
+                await this.verifyGender(id);
+                try {
+                    await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
+                } catch (error) {
+                    console.log(error)
+                }
+                return { message: "User gender verified", id: user._id };
+            default:
+                return { message: "Unknown action", id: user._id };
+        }
+
     }
 
     // Stats 

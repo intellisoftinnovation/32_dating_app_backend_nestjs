@@ -14,6 +14,7 @@ import { PaymentModule } from 'src/payment/payment.module';
 import { Complaint, ComplaintSchema } from './schemas/complaint.schema';
 import { ComplaintController } from './complaint.controller';
 import { StatsController } from './stats.controller';
+import { FirebaseAdminService } from 'src/helpers/firebase-admin.service';
 @Module({
   imports: [MongooseModule.forFeature([
     { name: User.name, schema: UserSchema },
@@ -27,7 +28,7 @@ import { StatsController } from './stats.controller';
   forwardRef(() => PaymentModule),
   ],
   controllers: [UsersController, PreferencesController, ComplaintController, StatsController],
-  providers: [UsersService],
+  providers: [UsersService, FirebaseAdminService],
   exports: [UsersService]
 })
 export class UsersModule { }
