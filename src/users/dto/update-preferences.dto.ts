@@ -2,6 +2,7 @@ import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, ValidateN
 import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Language, TypeOfRelationFind } from "../schemas/profile.schema";
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
+import { GeoLocationDto } from "./update-user.dto";
 
 export class AgeRangeDto {
     @IsNotEmpty()
@@ -50,6 +51,12 @@ export class UpdatePreferenceDto {
     @IsArray()
     @ApiProperty()
     englishLevel: EnglishLevel[];
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => GeoLocationDto)
+    @ApiProperty({ type: GeoLocationDto })
+    geoLocation?: GeoLocationDto;
 
     @IsOptional()
     @ValidateNested()

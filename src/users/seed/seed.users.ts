@@ -37,6 +37,7 @@ const seedUsers: SeedUser =
         phone: getRandomPhoneNumber('+51'),
         request: Math.floor(Math.random() * 1000) + 1,
         genderVerified: false,
+        fcmToken:'',
         geoLocations: {
             latitude: 0,
             longitude: 0,

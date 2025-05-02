@@ -8,7 +8,8 @@ export enum ComplaintType {
   OTHER = "OTHER",
   NSFW  = "NSFW", 
   KYC   = "KYC", 
-  AGE   = "AGE"
+  AGE   = "AGE", 
+  ACOSO = "ACOSO",
 }
 
 export enum ComplaintStatus { 

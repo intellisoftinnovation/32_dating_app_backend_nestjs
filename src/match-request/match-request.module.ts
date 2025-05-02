@@ -6,6 +6,7 @@ import { UsersModule } from 'src/users/users.module';
 import { MatchRequest, MatchRequestSchema } from './schemas/match-request.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentModule } from 'src/payment/payment.module';
+import { FirebaseAdminService } from 'src/helpers/firebase-admin.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { PaymentModule } from 'src/payment/payment.module';
     ])
   ],
   controllers: [MatchRequestController],
-  providers: [MatchRequestService],
+  providers: [MatchRequestService, FirebaseAdminService],
   exports: [MatchRequestService]
 })
 export class MatchRequestModule {}

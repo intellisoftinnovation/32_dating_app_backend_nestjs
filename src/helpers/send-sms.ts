@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { envs } from 'src/config';
-import * as twilio from 'twilio';
+import twilio from 'twilio';
 
 export const sendSMS = async (phone: string, message: string) => {
     const client = twilio(envs.TWILIO_ACCOUNT_SID, envs.TWILIO_AUTH_TOKEN);

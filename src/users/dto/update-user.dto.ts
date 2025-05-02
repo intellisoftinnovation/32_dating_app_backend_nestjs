@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsDate, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Appearance, BodyType,  EnglishLevel,  Etnicidad, FamilySituation, Gender, Language, TypeOfRelationFind } from '../schemas/profile.schema';
+import { Appearance, BodyType, EnglishLevel, Etnicidad, FamilySituation, Gender, Language, TypeOfRelationFind } from '../schemas/profile.schema';
 import { SocialNetworks } from '../schemas/social-network.schema';
 import { Transform, Type } from 'class-transformer';
 import { Currency } from '../schemas/profit.schema';
@@ -85,6 +85,11 @@ export class UpdateUserDto {
     @IsString()
     @IsOptional()
     @ApiProperty()
+    fcmToken?: string
+
+    @IsString()
+    @IsOptional()
+    @ApiProperty()
     description?: string
 
     @IsOptional()
@@ -156,9 +161,9 @@ export class UpdateUserDto {
     smoking?: boolean;
 
     @IsOptional()
-    @IsEnum(Language,{each: true})
+    @IsEnum(Language, { each: true })
     @IsArray()
-    @ApiProperty({ enum: Language , isArray: true })
+    @ApiProperty({ enum: Language, isArray: true })
     language?: Language[];
 
     @IsOptional()
@@ -187,5 +192,5 @@ export class UpdateUserDto {
     @IsBoolean()
     @ApiProperty()
     @Type(() => Boolean)
-    onBoardingCompleted?: boolean;  
+    onBoardingCompleted?: boolean;
 }

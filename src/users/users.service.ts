@@ -62,9 +62,9 @@ export class UsersService {
         return user;
     }
 
-    async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    async updateUser(id: string, updateUserDto: UpdateUserDto & Partial<{ phoneVerified: boolean, genderVerified: boolean, }>) {
 
-        const { name, email, englishLevel, etnicidad, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone, typeOfRelationFind } = updateUserDto
+        const { name, email, englishLevel, etnicidad, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone, typeOfRelationFind, fcmToken, genderVerified, phoneVerified } = updateUserDto
 
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
@@ -92,6 +92,10 @@ export class UsersService {
         if (gender) {
             await this.profileModel.updateOne({ _id: user.profile }, { $set: { gender, genderVerified: false } });
         }
+
+        if (fcmToken) await this.profileModel.updateOne({ _id: user.profile }, { $set: { fcmToken } });
+        if (genderVerified) await this.profileModel.updateOne({ _id: user.profile }, { $set: { genderVerified } });
+        if (phoneVerified) await this.profileModel.updateOne({ _id: user.profile }, { $set: { phoneVerified } });
 
 
         if (geoLocation) {
@@ -139,7 +143,6 @@ export class UsersService {
 
         return { message: 'User updated', id: user._id };
     }
-
 
     async findOneForJwtStragety(id: string) {
         const user = await this.userModel.findById(id);
@@ -204,7 +207,15 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('preference');
         if (!user.preference) {
-            const tempPreferences = await this.preferenceModel.create({ userId: user._id, ageRange: { min: 18, max: 55 }, altura: { min: 150, max: 200 } });
+            const tempPreferences = await this.preferenceModel.create({
+                userId: user._id, ageRange: { min: 18, max: 55 }, altura: { min: 150, max: 200 },
+                geoLocations: {
+                    city: "Lima",
+                    country: "Peru",
+                    latitude: -12.046373,
+                    longitude: -77.045817
+                }
+            });
             await this.userModel.findByIdAndUpdate(user._id, { preference: tempPreferences._id })
             user = await this.userModel.findById(id);
             await user.populate('preference')

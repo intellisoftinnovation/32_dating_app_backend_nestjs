@@ -150,9 +150,9 @@ export class KycController {
 
   @Post('checkCodeWithPhone')
   @Auth()
-  async checkCodeWithPhone(@Body() checkCodeWithPhoneDto: CheckCodeWithPhoneDto) {
+  async checkCodeWithPhone(@Body() checkCodeWithPhoneDto: CheckCodeWithPhoneDto, @GetUser() user: UserDocument) {
     const { phone, code } = checkCodeWithPhoneDto;
-    return this.kycService.checkCodeWithPhone(phone, code);
+    return this.kycService.checkCodeWithPhone(phone, code, user);
   }
 
 

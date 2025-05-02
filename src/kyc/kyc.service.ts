@@ -129,12 +129,13 @@ export class KycService {
     }
 
 
-    async checkCodeWithPhone(phone: string, code: string) {
+    async checkCodeWithPhone(phone: string, code: string, user: UserDocument) {
         const isValid = verifyOTP({ phone }, code)
 
         if (!isValid) {
             return { message: 'Invalid code', verified: false };
         }
+        await this.usersService.updateUser(user._id.toString(), { phone: phone })
         return { message: 'Code verified', verified: true };
     }
 }
