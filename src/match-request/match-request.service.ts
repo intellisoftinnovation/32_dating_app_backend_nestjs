@@ -143,7 +143,9 @@ export class MatchRequestService {
         await matchRequest.save();
 
         try {
-            fcm = await this.firebaseAdminService.sendNotificationToDevice(matchRequest.from.profile.fcmToken, { title: "🔥 ¡Es un match!", body: "Tu solicitud fue aceptada. Es hora de romper el hielo y empezar la conversación." });
+            if (matchRequest.status === MatchRequestStatus.ACCEPTED) {
+                fcm = await this.firebaseAdminService.sendNotificationToDevice(matchRequest.from.profile.fcmToken, { title: "🔥 ¡Es un match!", body: "Tu solicitud fue aceptada. Es hora de romper el hielo y empezar la conversación." });
+            }
         } catch (error) {
             err = error;
             console.log(error)

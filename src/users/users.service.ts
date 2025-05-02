@@ -288,7 +288,7 @@ export class UsersService {
         const selfLocation = selfUser.profile.geoLocations;
         let ageRange: AgeRange = null
         let alturaRange: Altura = null
-        const { page, size, age_min, age_max, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
+        const { page, size, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
 
         if ((age_min || age_max) && !(age_min && age_max)) throw new HttpException({ message: 'Age range is invalid .', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
         if ((age_min && age_max) && (age_max < age_min)) throw new HttpException({ message: 'Age range is invalid ..', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
@@ -334,9 +334,18 @@ export class UsersService {
             const smokingMatch = smoking?.length ? smoking.includes(user.profile.smoking) : false;
             const typeOfRelationFindMatch = typeOfRelationFind?.length ? typeOfRelationFind.includes(user.profile.typeOfRelationFind) : false;
             let userDistance = -1;
+
+
+
             if (selfLocation && user.profile.geoLocations) {
                 userDistance = HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
             }
+
+            if (geoLocation && user.profile.geoLocations) {
+                userDistance = HaverSine(geoLocation.latitude, geoLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
+            }
+
+
             let distanceMatch = distance ? (userDistance <= distance) : false;
             if (!selfLocation) distanceMatch = false;
 
