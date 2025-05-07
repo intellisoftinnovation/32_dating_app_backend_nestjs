@@ -77,7 +77,7 @@ export class PaymentService {
         const preApproval = new PreApproval(this.client);
         const LIMIT = 100;
         let offset = 0;
-        let resultsArray: PreApprovalResults[];
+        let resultsArray: PreApprovalResults[] = [];
 
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
