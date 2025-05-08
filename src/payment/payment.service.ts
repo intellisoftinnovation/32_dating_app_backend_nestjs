@@ -247,15 +247,16 @@ export class PaymentService {
             // console.log(results);
             resultsArray = resultsArray.concat(results.results);
 
-            results.results.forEach(element => {
 
+            for (let i = 0; i < results.results.length; i++) {
+                const element = results.results[i];
                 ++it
                 if (element.external_reference.toString() === user.inc_id) {
                     console.log("Yes")
                     const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
                     if (element.status === 'cancelled') {
                         console.log('A')
-                        if(((days || months || years))){
+                        if (((days || months || years))) {
                             console.log('B')
                         }
                     }
@@ -270,7 +271,7 @@ export class PaymentService {
                         premium = true;
                     }
                 }
-            });
+            };
 
             if (results.results.length < LIMIT) break;
 
