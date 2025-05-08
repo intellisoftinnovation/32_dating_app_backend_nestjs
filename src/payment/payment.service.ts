@@ -266,7 +266,10 @@ export class PaymentService {
                 }
             });
 
-            if (results.results.length < LIMIT) break;
+            if (results.results.length == 0 ) {
+                console.log("No results")
+                break
+            };
 
             offset += LIMIT;
 
