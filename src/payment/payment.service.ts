@@ -229,6 +229,7 @@ export class PaymentService {
         const preApproval = new PreApproval(this.client);
         const LIMIT = 100;
         let offset = 0;
+        // let it =  0 ; 
         let premium = false;
         let resultsArray: any[] = [];
         const subscription: GetSubcriptionResult[] = [];
@@ -255,6 +256,7 @@ export class PaymentService {
                         element.auto_recurring,
                     );
                     if (element.status === "authorized" || ((days || months || years) && element.status === 'cancelled')) {
+                        console.log(element.id)
                         subscription.push({subscription:element ,days , months, years, expirationDate });
                         premium = true;
                     }
@@ -268,7 +270,7 @@ export class PaymentService {
             if (!premium) await delay(500);
             // console.log(`Fetching next ${LIMIT} results...`);
         } while (!premium);
-
+        
         if (!premium) {
             return { message: "No Subscription Found", subscription: null };
         } else {
@@ -329,7 +331,7 @@ export class PaymentService {
     }
 
     private calculateRemainingTime(expirationDate: Date | null): { years: number; months: number; days: number } | null {
-        console.log(expirationDate)
+        // console.log(expirationDate)
         if (!expirationDate) return null;
 
         const now = new Date();
