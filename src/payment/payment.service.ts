@@ -251,6 +251,7 @@ export class PaymentService {
 
                 ++it
                 if (element.external_reference.toString() === user.inc_id) {
+                    console.log("Yes")
                     const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
                     if (element.status === 'cancelled') {
                         console.log('A')
