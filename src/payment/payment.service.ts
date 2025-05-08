@@ -273,7 +273,7 @@ export class PaymentService {
             if (!premium) await delay(500);
             // console.log(`Fetching next ${LIMIT} results...`);
         } while (!premium);
-        
+        console.log("\n\n#End\n\n")
         if (!premium) {
             return { message: "No Subscription Found", subscription: null };
         } else {
