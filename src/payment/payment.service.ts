@@ -240,7 +240,8 @@ export class PaymentService {
                 options: {
                     // status: "authorized",
                     limit: LIMIT,
-                    offset: offset
+                    offset: offset, 
+                    sort: "date_created:desc"
                 }
             });
 
