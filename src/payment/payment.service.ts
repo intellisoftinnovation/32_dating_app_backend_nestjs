@@ -249,7 +249,7 @@ export class PaymentService {
 
             results.results.forEach(element => {
 
-                console.log(++it);
+                ++it
                 if (element.external_reference.toString() === user.inc_id) {
                     const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
                     if (element.status === 'cancelled') {
@@ -278,7 +278,7 @@ export class PaymentService {
             if (!premium) await delay(500);
             // console.log(`Fetching next ${LIMIT} results...`);
         } while (!premium);
-
+        console.log(it)
         if (!premium) {
             return { message: "No Subscription Found", subscription: null };
         } else {
