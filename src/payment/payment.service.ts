@@ -228,60 +228,51 @@ export class PaymentService {
     async getSubscription(idInToken: string) {
         const preApproval = new PreApproval(this.client);
         const LIMIT = 100;
-        let it = 0;
         let offset = 0;
         let premium = false;
-        // let resultsArray: any[] = [];
+        let resultsArray: any[] = [];
         const subscription: GetSubcriptionResult[] = [];
         const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         const user = await this.usersService.getUserById(idInToken);
-        let results ; 
         do {
-            results = await preApproval.search({
+            const results = await preApproval.search({
                 options: {
+                    // status: "authorized",
                     limit: LIMIT,
                     offset: offset
                 }
             });
-        
-            if (!results || !Array.isArray(results.results)) break;
-        
-            for (const element of results.results) {
-                it++ ; 
-                if (element.external_reference?.toString() === user.inc_id) {
+
+            // console.log(results);
+            resultsArray = resultsArray.concat(results.results);
+
+            results.results.forEach(element => {
+                if (element.external_reference.toString() === user.inc_id) {
+                    const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
                     const expirationDate = this.calculateExpirationDate(
                         element.next_payment_date,
                         element.date_created,
                         element.auto_recurring,
                     );
-        
-                    const stillValid = expirationDate && expirationDate.getTime() > Date.now();
-        
-                    if (
-                        element.status === "authorized" ||
-                        (stillValid && element.status === "cancelled")
-                    ) {
-                        subscription.push({
-                            subscription: element,
-                            ...this.calculateRemainingTime(expirationDate),
-                            expirationDate,
-                        });
+                    if (element.status === "authorized" || ((days || months || years) && element.status === 'cancelled')) {
+                        subscription.push({subscription:element ,days , months, years, expirationDate });
                         premium = true;
                     }
                 }
-            }
-        
+            });
+
+            if (results.results.length < LIMIT) break;
+
             offset += LIMIT;
-        
-            // siempre pausamos, por respeto a rate limit
-            await delay(500);
-        } while (results.results.length === LIMIT);
-        
-        console.log(it)
+
+            if (!premium) await delay(500);
+            // console.log(`Fetching next ${LIMIT} results...`);
+        } while (!premium);
+
         if (!premium) {
             return { message: "No Subscription Found", subscription: null };
         } else {
-            return { message: "Subscription Found", subscription };
+            return { message: "Subscription Found", subscription};
         }
     }
 
@@ -338,17 +329,20 @@ export class PaymentService {
     }
 
     private calculateRemainingTime(expirationDate: Date | null): { years: number; months: number; days: number } | null {
+        console.log(expirationDate)
         if (!expirationDate) return null;
 
         const now = new Date();
         const diffMs = expirationDate.getTime() - now.getTime();
         const diffDays = Math.max(Math.floor(diffMs / (1000 * 60 * 60 * 24)), 0);
 
-        return {
+        const sol =  {
             years: Math.floor(diffDays / 365),
             months: Math.floor((diffDays % 365) / 30),
             days: diffDays % 30,
         };
+        console.log(expirationDate , sol)
+        return sol 
     }
 
 }
