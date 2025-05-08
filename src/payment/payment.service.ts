@@ -248,6 +248,9 @@ export class PaymentService {
             resultsArray = resultsArray.concat(results.results);
 
             results.results.forEach(element => {
+                if(element.id == '0541145f6f05472c82fa4d1735563fb1'){
+                    console.log("Here !!")
+                }
                 if (element.external_reference.toString() === user.inc_id) {
                     const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
                     const expirationDate = this.calculateExpirationDate(
