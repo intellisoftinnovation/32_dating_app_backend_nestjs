@@ -251,6 +251,7 @@ export class PaymentService {
             for (let i = 0; i < results.results.length; i++) {
                 const element = results.results[i];
                 ++it
+                console.log(element.external_reference.toString() , '==?', user.inc_id)
                 if (element.external_reference.toString() === user.inc_id) {
                     console.log("Yes")
                     const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
