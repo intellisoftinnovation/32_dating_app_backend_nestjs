@@ -228,7 +228,7 @@ export class PaymentService {
     async getSubscription(idInToken: string) {
         const preApproval = new PreApproval(this.client);
         const LIMIT = 100;
-        // let it = 0;
+        let it = 0;
         let offset = 0;
         let premium = false;
         // let resultsArray: any[] = [];
@@ -247,6 +247,7 @@ export class PaymentService {
             if (!results || !Array.isArray(results.results)) break;
         
             for (const element of results.results) {
+                it++ ; 
                 if (element.external_reference?.toString() === user.inc_id) {
                     const expirationDate = this.calculateExpirationDate(
                         element.next_payment_date,
