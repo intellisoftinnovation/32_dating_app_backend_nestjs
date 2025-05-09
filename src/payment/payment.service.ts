@@ -86,13 +86,14 @@ export class PaymentService {
                 options: {
                     status: "authorized",
                     limit: LIMIT,
-                    offset: offset
+                    offset: offset, 
+                    order: "date_created:desc"
                 }
             });
 
             resultsArray = resultsArray.concat(results.results);
 
-            if (results.results.length < LIMIT) break;
+            if (results.results.length == 0) break;
 
             offset += LIMIT;
 
@@ -198,7 +199,8 @@ export class PaymentService {
             const results = await preApproval.search({
                 options: {
                     limit: LIMIT,
-                    offset: offset
+                    offset: offset, 
+                    sort: "date_created:desc"
                 }
             });
 
@@ -214,7 +216,7 @@ export class PaymentService {
                 }
             });
 
-            if (results.results.length < LIMIT) break;
+            if (results.results.length ==0) break;
 
             offset += LIMIT;
 
@@ -240,7 +242,7 @@ export class PaymentService {
                 options: {
                     // status: "authorized",
                     limit: LIMIT,
-                    offset: offset, 
+                    offset: offset,
                     sort: "date_created:desc"
                 }
             });
@@ -249,9 +251,6 @@ export class PaymentService {
             resultsArray = resultsArray.concat(results.results);
 
             results.results.forEach(element => {
-                if(element.id == '0541145f6f05472c82fa4d1735563fb1'){
-                    console.log("Here !!")
-                }
                 if (element.external_reference.toString() === user.inc_id) {
                     const { days, months, years } = this.calculateRemainingTime(this.calculateExpirationDate(element.next_payment_date, element.date_created, element.auto_recurring));
                     const expirationDate = this.calculateExpirationDate(
@@ -260,15 +259,14 @@ export class PaymentService {
                         element.auto_recurring,
                     );
                     if (element.status === "authorized" || ((days || months || years) && element.status === 'cancelled')) {
-                        console.log(element.id)
-                        subscription.push({subscription:element ,days , months, years, expirationDate });
+                        subscription.push({ subscription: element, days, months, years, expirationDate });
                         premium = true;
                     }
                 }
             });
 
-            if (results.results.length == 0 ) {
-                console.log("No results")
+            if (results.results.length == 0) {
+                // console.log("No results")
                 break
             };
 
@@ -277,11 +275,11 @@ export class PaymentService {
             if (!premium) await delay(500);
             // console.log(`Fetching next ${LIMIT} results...`);
         } while (!premium);
-        console.log("\n\n#End\n\n")
+        // console.log("\n\n#End\n\n")
         if (!premium) {
             return { message: "No Subscription Found", subscription: null };
         } else {
-            return { message: "Subscription Found", subscription};
+            return { message: "Subscription Found", subscription };
         }
     }
 
@@ -345,13 +343,13 @@ export class PaymentService {
         const diffMs = expirationDate.getTime() - now.getTime();
         const diffDays = Math.max(Math.floor(diffMs / (1000 * 60 * 60 * 24)), 0);
 
-        const sol =  {
+        const sol = {
             years: Math.floor(diffDays / 365),
             months: Math.floor((diffDays % 365) / 30),
             days: diffDays % 30,
         };
-        console.log(expirationDate , sol)
-        return sol 
+        // console.log(expirationDate, sol)
+        return sol
     }
 
 }
