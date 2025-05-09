@@ -41,8 +41,6 @@ export class ComplaintController {
   async action(@Param('id') id: string , @Body() complaintActionDto: ComplaintActionDto) {
     return await this.usersService.actionComplaint(id, complaintActionDto);
   }
-
-
 }
 
 

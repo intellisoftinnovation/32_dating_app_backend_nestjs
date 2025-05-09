@@ -10,7 +10,7 @@ export class FindAllComplaintsDto extends PaginationDto {
     status: ComplaintStatus
 
     @IsOptional()
-    @IsEnum(ComplaintStatus)
+    @IsEnum(ComplaintType)
     @ApiPropertyOptional({enum: ComplaintType})
     type: ComplaintType
 }

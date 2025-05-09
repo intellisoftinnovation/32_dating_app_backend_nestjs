@@ -65,7 +65,7 @@ export class MatchRequestService {
                     path: 'profile',
                     select: "photos"
                 },
-            });
+            }).sort({ createdAt: -1 }); 
 
         // Solo aplica paginación si offPagination no es true
         if (!offPagination) {
@@ -86,7 +86,6 @@ export class MatchRequestService {
             metadata,
         };
     }
-
 
     async refreshMatchHot() {
         const sevenDaysAgo = new Date();
@@ -158,6 +157,11 @@ export class MatchRequestService {
     async getMatchRequestByFromTo(from: string, to: string) {
         const matchRequest = await this.matchRequestModel.findOne({ from: from, to: to });
         return matchRequest;
+    }
+
+    async getMatchRequestByFromName(from: string, name: string) {
+        const matchRequest = await this.matchRequestModel.find({ from: from }).populate('to', 'name');
+        return matchRequest.filter(item => item.to.name.toLowerCase().includes(name.toLowerCase()));
     }
 
 

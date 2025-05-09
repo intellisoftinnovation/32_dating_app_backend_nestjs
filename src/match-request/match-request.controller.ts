@@ -37,6 +37,12 @@ export class MatchRequestController {
     return this.matchRequestService.updateMatchRequest(id, idInToken, status);
   }
 
+  @Get('/name/:name')
+  @Auth()
+  async getMatchRequestByName(@GetUser('_id') from: string, @Param('name') name: string) {
+    return this.matchRequestService.getMatchRequestByFromName(from, name);
+  }
+
   // @Post('test/:target')
   // async test(@Param('target') target: string) {
   //   return this.matchRequestService.test(target);
