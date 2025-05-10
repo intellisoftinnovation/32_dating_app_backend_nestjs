@@ -110,7 +110,7 @@ export class GetUsersDto extends PaginationDto {
     @IsArray()
     @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
     @ApiPropertyOptional({ isArray: true, enum: Language })
-    language: Language[];
+    language: Language[] = [];
 
     @IsOptional()
     @IsEnum(TypeOfRelationFind, { each: true })
