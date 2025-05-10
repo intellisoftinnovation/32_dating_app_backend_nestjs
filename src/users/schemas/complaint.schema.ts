@@ -9,6 +9,7 @@ export enum ComplaintType {
   NSFW  = "NSFW", 
   KYC   = "KYC", 
   AGE   = "AGE", 
+  SPEAK  = "SPEAK",
   ACOSO = "ACOSO",
 }
 
