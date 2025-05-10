@@ -2,7 +2,7 @@ import { Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query }
 import { MatchRequestService } from './match-request.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { GetMatchRequestDto } from './dto/get-match-request.dto';
+import { GetMatchRequestDto, Side } from './dto/get-match-request.dto';
 import { MatchRequestStatus } from './schemas/match-request.schema';
 import { ApiQuery } from '@nestjs/swagger';
 
@@ -38,9 +38,15 @@ export class MatchRequestController {
   }
 
   @Get('/name/:name')
+  @ApiQuery({
+    enum: Side,
+    name: 'side',
+    required: true,
+    description: 'Side of the match request'
+  })
   @Auth()
-  async getMatchRequestByName(@GetUser('_id') from: string, @Param('name') name: string) {
-    return this.matchRequestService.getMatchRequestByFromName(from, name);
+  async getMatchRequestByName(@GetUser('_id') from: string, @Param('name') name: string, @Query() params: { side: Side }) {
+    return this.matchRequestService.getMatchRequestByFromName(from, name, params);
   }
 
   // @Post('test/:target')

@@ -1,5 +1,5 @@
 import { Transform, Type } from "class-transformer";
-import { IsArray, IsEnum, IsOptional, IsNumber, IsBoolean} from "class-validator";
+import { IsArray, IsEnum, IsOptional, IsNumber, IsBoolean } from "class-validator";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { Appearance, Etnicidad, EnglishLevel, BodyType, Language, FamilySituation, Gender, TypeOfRelationFind } from "../schemas/profile.schema";
 import { ApiPropertyOptional } from "@nestjs/swagger";
@@ -75,7 +75,16 @@ export class GetUsersDto extends PaginationDto {
     })
     // @ValidateNested()
     @Type(() => GeoLocationDto)
-    @ApiPropertyOptional({ type: GeoLocationDto })
+    @ApiPropertyOptional({
+        type: GeoLocationDto, default: {
+            "geoLocation": {
+                "latitude": 40.7128,
+                "longitude": -74.006,
+                "country": "United States",
+                "city": "New York"
+            }
+        }
+    })
     geoLocation?: GeoLocationDto;
 
     @IsOptional()

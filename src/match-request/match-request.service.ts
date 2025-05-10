@@ -65,7 +65,7 @@ export class MatchRequestService {
                     path: 'profile',
                     select: "photos"
                 },
-            }).sort({ createdAt: -1 }); 
+            }).sort({ createdAt: -1 });
 
         // Solo aplica paginación si offPagination no es true
         if (!offPagination) {
@@ -159,9 +159,15 @@ export class MatchRequestService {
         return matchRequest;
     }
 
-    async getMatchRequestByFromName(from: string, name: string) {
-        const matchRequest = await this.matchRequestModel.find({ from: from }).populate('to', 'name');
-        return matchRequest.filter(item => item.to.name.toLowerCase().includes(name.toLowerCase()));
+    async getMatchRequestByFromName(from: string, name: string, params: { side: Side }) {
+        const { side } = params;
+        if (side === Side.FROM) {
+            const matchRequest = await this.matchRequestModel.find({ from: from }).populate('to', 'name');
+            return matchRequest.filter(item => item.to.name.toLowerCase().includes(name.toLowerCase()));
+        } else {
+            const matchRequest = await this.matchRequestModel.find({ to: from }).populate('from', 'name');
+            return matchRequest.filter(item => item.from.name.toLowerCase().includes(name.toLowerCase()));
+        }
     }
 
 
