@@ -570,6 +570,8 @@ export class UsersService {
     // Stats 
     async getStats() {
         const users = await this.userModel.find({}).select("inc_id");
+        
+        const users_this_month = await this.metaDataModel.find({ createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } }).select("inc_id");
         const ids = users.map(u => u.inc_id);
         const premiumCount = new Set();
         const allSubscriptions = await this.paymentService.getAllSubscriptions();
@@ -592,9 +594,11 @@ export class UsersService {
         }
 
         return {
-            Total: users.length,
-            premium: premiumCount.size,
-            monthlyMoney,
+            Total_de_usuarios: users.length,
+            Total_de_premium: premiumCount.size,
+            Subscripciones_activas: premiumCount.size,
+            Total_de_usuarios_nuevos_este_mes: users_this_month.length,
+            ganancias_mensuales:monthlyMoney,
             history
         }
     }
