@@ -122,7 +122,7 @@ export class KycService {
         const totp = generateOTP({ phone })
 
         console.log(totp)
-        const { send_status } = await sendSMS(`${phone}`, ` ${totp} es su código de verificación de Chamoy`)
+        const { send_status } = await sendSMS(`+${phone}`, ` ${totp} es su código de verificación de Chamoy`)
         if (envs.ERRORLOGS) console.log(send_status)
 
         return { message: "Código enviado" }
