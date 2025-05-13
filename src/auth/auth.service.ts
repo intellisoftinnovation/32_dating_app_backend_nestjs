@@ -48,7 +48,7 @@ export class AuthService {
         const totp = generateOTP({ phone: user.profile.phone, password: user.password })
         console.log( `User Profile phone` , user.profile.phone)
 
-        const { send_status } = await sendSMS(user.profile.phone, ` ${totp} es su código de verificación de Chamoy`)
+        const { send_status } = await sendSMS(`${user.profile.phone}`, ` ${totp} es su código de verificación de Chamoy`)
 
         if (envs.ERRORLOGS) console.log(send_status)
 
