@@ -43,7 +43,7 @@ export class PaymentService {
         const results = await preApproval.create({
             body: {
                 status: "pending",
-                // TODO: Add User Email !!
+                // TBD: Add User Email !!
                 payer_email: `test_user_1415234644@testuser.com`,
                 back_url: "https://chamoy.lat",
                 reason: plan.reason,
