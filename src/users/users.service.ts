@@ -453,7 +453,8 @@ export class UsersService {
         if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with id ${id} was deleted` }, HttpStatus.NOT_FOUND);
         if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with id ${id} is suspended` }, HttpStatus.FORBIDDEN);
 
-        const solicitud = await this.matchRequestService.getMatchRequestByFromTo(idInToken, id);
+        const solicitud1 = await this.matchRequestService.getMatchRequestByFromTo(idInToken, id);
+        const solicitud2 = await this.matchRequestService.getMatchRequestByFromTo(id, idInToken);
         let distance = -1;
         if (selfUser.profile.geoLocations && user.profile.geoLocations) distance = HaverSine(selfUser.profile.geoLocations.latitude, selfUser.profile.geoLocations.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude);
         return {
@@ -475,8 +476,10 @@ export class UsersService {
                 smoking: user.profile.smoking,
                 typeOfRelationFind: user.profile.typeOfRelationFind,
                 lastConnection: user.metaData.lastConnection,
-                ...(solicitud ? { solicitud: solicitud.status } : {}),
-                ...((isPremium && solicitud && solicitud.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone, networks: user.profile.socialNetworks } : {}),
+                ...(solicitud1 ? { solicitud: solicitud1.status } : {}),
+                ...(solicitud2 ? { solicitud: solicitud2.status } : {}),
+                ...((isPremium && solicitud1 && solicitud1.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone, networks: user.profile.socialNetworks } : {}),
+                ...((isPremium && solicitud2 && solicitud2.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone, networks: user.profile.socialNetworks } : {}),
             }
         };
     }
