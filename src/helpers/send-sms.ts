@@ -10,7 +10,8 @@ export const sendSMS = async (phone: string, message: string) => {
             {
                 body: message,
                 from: envs.TWILIO_PHONE_NUMBER,
-                to: phone
+                to: phone, 
+                statusCallback: 'https://webhook.site/6c18db3f-0103-48d0-9313-b3465f32f878'
             }
         )
         return { send_status };
