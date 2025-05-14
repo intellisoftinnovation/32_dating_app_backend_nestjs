@@ -153,4 +153,10 @@ export class GetUsersDto extends PaginationDto {
     @ApiPropertyOptional({ enum: Enviroment, default: Enviroment.PRODUCTION })
     enviroment: Enviroment = Enviroment.PRODUCTION
 
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }) => value === "true")
+    @ApiPropertyOptional()
+    paggination: boolean = true;
+
 }

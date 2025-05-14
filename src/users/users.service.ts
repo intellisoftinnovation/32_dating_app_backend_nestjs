@@ -37,7 +37,7 @@ export class UsersService {
         @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
         @InjectModel(Complaint.name) private readonly complaintModel: Model<Complaint>,
         @Inject(forwardRef(() => PaymentService)) private readonly paymentService: PaymentService,
-        @Inject(forwardRef(()=> FirebaseAdminService)) private readonly firebaseAdminService: FirebaseAdminService,
+        @Inject(forwardRef(() => FirebaseAdminService)) private readonly firebaseAdminService: FirebaseAdminService,
         @Inject(forwardRef(() => MatchRequestService)) private readonly matchRequestService: MatchRequestService,
         private readonly jwtService: JwtService
     ) { }
@@ -292,7 +292,7 @@ export class UsersService {
         const selfLocation = selfUser.profile.geoLocations;
         let ageRange: AgeRange = null
         let alturaRange: Altura = null
-        const { page, size, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
+        const { page, size, paggination, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
         // console.log({ page, size, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } )
 
         if ((age_min || age_max) && !(age_min && age_max)) throw new HttpException({ message: 'Age range is invalid .', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
@@ -354,9 +354,9 @@ export class UsersService {
             let distanceMatch = distance ? (userDistance <= distance) : false;
             if (!selfLocation) distanceMatch = false;
 
-            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || (language ? language.length : false )|| smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
+            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || (language ? language.length : false) || smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
             const match = genderMatch && (!hasAnyFilter || ageMatch || alturaMatch || distanceMatch || appearanceMatch || bodyTypeMatch || englishLevelMatch || etnicidadMatch || familySituationMatch || languageMatch || smokingMatch || typeOfRelationFindMatch);
-            
+
             if (match) {
                 switch (enviroment) {
                     case Enviroment.DEVELOPMENT:
@@ -386,7 +386,7 @@ export class UsersService {
         const startIndex = (page - 1) * size;
         const endIndex = page * size;
 
-        const paginatedData = dataFiltered.slice(startIndex, endIndex);
+        const paginatedData = paggination ? dataFiltered.slice(startIndex, endIndex) : dataFiltered;
 
         const timeFilterEnd = process.hrtime(timeFilter);
 
@@ -573,7 +573,7 @@ export class UsersService {
     // Stats 
     async getStats() {
         const users = await this.userModel.find({}).select("inc_id");
-        
+
         const users_this_month = await this.metaDataModel.find({ createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } }).select("inc_id");
         const ids = users.map(u => u.inc_id);
         const premiumCount = new Set();
@@ -601,7 +601,7 @@ export class UsersService {
             Total_de_premium: premiumCount.size,
             Subscripciones_activas: premiumCount.size,
             Total_de_usuarios_nuevos_este_mes: users_this_month.length,
-            ganancias_mensuales:monthlyMoney,
+            ganancias_mensuales: monthlyMoney,
             history
         }
     }
