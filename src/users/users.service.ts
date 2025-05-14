@@ -570,6 +570,11 @@ export class UsersService {
 
     }
 
+    async getUsersCreateAt(){
+        const users = await this.userModel.find({}).select("inc_id").populate('metaData');
+        const usersCreateAt = users.map(u => ({ inc_id: u.inc_id, createdAt: u.metaData.createdAt }));
+        return usersCreateAt;
+    }
     // Stats 
     async getStats() {
         const users = await this.userModel.find({}).select("inc_id");

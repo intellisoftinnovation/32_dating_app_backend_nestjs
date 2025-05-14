@@ -86,7 +86,7 @@ export class PaymentService {
                 options: {
                     status: "authorized",
                     limit: LIMIT,
-                    offset: offset, 
+                    offset: offset,
                     order: "date_created:desc"
                 }
             });
@@ -106,6 +106,7 @@ export class PaymentService {
 
     async Reportes() {
         const payment = new Payment(this.client);
+        const users = await this.usersService.getUsersCreateAt()
         const LIMIT = 100;
         let offset = 0;
         let resultsArray: any[] = [];
@@ -158,29 +159,18 @@ export class PaymentService {
             return acc;
         }, {});
 
-        // Convertir a array
-        // return Object.values(resumenMensual);
+        users.forEach(user => {
+            const fecha = new Date(user.createdAt);
+            const mes = fecha.getMonth() + 1;
+            const año = fecha.getFullYear();
+            const key = `${mes}-${año}`;
 
-        // const pagosPorUsuario = resultsArray.reduce((acc, pago) => {
-        //     const email = pago.payer?.email || "desconocido";
-        //     const cantidad = pago.transaction_amount;
-        //     const tipo = pago.point_of_interaction?.type === "SUBSCRIPTIONS" && pago.point_of_interaction?.transaction_data?.subscription_id
-        //         ? "Suscripción"
-        //         : "Compra";
+            if (!resumenMensual[key]) {
+                resumenMensual[key] = { mes, año, total: 0, usuarios_registrados: 0 };
+            }
 
-        //     if (!acc[email]) {
-        //         acc[email] = { email, total_pagado: 0, tipos: new Set() };
-        //     }
-
-        //     acc[email].total_pagado += cantidad;
-        //     acc[email].tipos.add(tipo);
-
-        //     return acc;
-        // }, {});
-
-        // // Convertimos los valores del objeto en un array
-
-        // return pagosPorUsuario;
+            resumenMensual[key].usuarios_registrados += 1;
+        });
         return Object.values(resumenMensual);
 
     }
@@ -199,7 +189,7 @@ export class PaymentService {
             const results = await preApproval.search({
                 options: {
                     limit: LIMIT,
-                    offset: offset, 
+                    offset: offset,
                     sort: "date_created:desc"
                 }
             });
@@ -216,7 +206,7 @@ export class PaymentService {
                 }
             });
 
-            if (results.results.length ==0) break;
+            if (results.results.length == 0) break;
 
             offset += LIMIT;
 
