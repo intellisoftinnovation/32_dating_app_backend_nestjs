@@ -293,6 +293,7 @@ export class UsersService {
         let ageRange: AgeRange = null
         let alturaRange: Altura = null
         const { page, size, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
+        // console.log({ page, size, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } )
 
         if ((age_min || age_max) && !(age_min && age_max)) throw new HttpException({ message: 'Age range is invalid .', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
         if ((age_min && age_max) && (age_max < age_min)) throw new HttpException({ message: 'Age range is invalid ..', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
@@ -353,10 +354,9 @@ export class UsersService {
             let distanceMatch = distance ? (userDistance <= distance) : false;
             if (!selfLocation) distanceMatch = false;
 
-            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
-
+            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || (language ? language.length : false )|| smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
             const match = genderMatch && (!hasAnyFilter || ageMatch || alturaMatch || distanceMatch || appearanceMatch || bodyTypeMatch || englishLevelMatch || etnicidadMatch || familySituationMatch || languageMatch || smokingMatch || typeOfRelationFindMatch);
-
+            
             if (match) {
                 switch (enviroment) {
                     case Enviroment.DEVELOPMENT:
