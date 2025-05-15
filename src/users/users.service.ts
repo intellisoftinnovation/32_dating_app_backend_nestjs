@@ -314,7 +314,7 @@ export class UsersService {
 
         const timeDb = process.hrtime();
 
-        const data = await this.userModel.find({}).lean().populate('profile', '-_id -description -__v -socialNetworks').populate('metaData', 'createdAt -_id')
+        const data = await this.userModel.find({}).lean().populate('profile', '-_id -description -__v -socialNetworks').populate('metaData', 'createdAt accountStatus -_id')
 
         const timeDbEnd = process.hrtime(timeDb);
 
@@ -526,7 +526,19 @@ export class UsersService {
         const complaints = await this.complaintModel.find(
             status ? { status } : {},
             type ? { type } : {}
-        ).skip((page - 1) * size).limit(size).populate('owner', 'name').populate('subjet', 'name');
+        ).skip((page - 1) * size).limit(size).populate({
+            path: 'owner',
+            select: 'name profile',
+            populate: {
+                path: 'profile',
+            },
+        }).populate({
+            path: 'subject',
+            select: 'name profile',
+            populate: {
+                path: 'profile',
+            },
+        }).exec();
 
         const metadata = {
             records: records,
@@ -577,6 +589,14 @@ export class UsersService {
                     console.log(error)
                 }
                 return { message: "User activated", id: user._id };
+            case ComplaintAction.CHANGE_GENDER:
+                await this.updateUser(id, { gender: user.profile.gender == Gender.MALE ? Gender.FEMALE : Gender.MALE });
+                try {
+                    await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
+                } catch (error) {
+                    console.log(error)
+                }
+                return { message: "User gender changed", id: user._id };
             default:
                 return { message: "Unknown action", id: user._id };
         }

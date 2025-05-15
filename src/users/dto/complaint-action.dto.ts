@@ -6,6 +6,7 @@ export enum ComplaintAction {
     DELETE = "DELETE",
     SUSPEND = "SUSPEND",
     VERIFY_GENDER = "VERIFY_GENDER",   
+    CHANGE_GENDER = "CHANGE_GENDER"
 }
 
 export class ComplaintActionDto {
