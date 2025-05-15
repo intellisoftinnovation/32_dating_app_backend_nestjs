@@ -463,6 +463,7 @@ export class UsersService {
                 altura: user.profile.altura,
                 appareanc: user.profile.appearance,
                 etnicidad: user.profile.etnicidad,
+                gender: user.profile.gender,
                 age: getAge(user.profile.birthdate),
                 bodyType: user.profile.bodyType,
                 description: user.profile.description,
