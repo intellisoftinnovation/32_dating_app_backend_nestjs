@@ -533,7 +533,7 @@ export class UsersService {
                 path: 'profile',
             },
         }).populate({
-            path: 'subject',
+            path: 'subjet',
             select: 'name profile',
             populate: {
                 path: 'profile',
