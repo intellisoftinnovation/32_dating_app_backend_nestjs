@@ -27,7 +27,6 @@ import { FirebaseAdminService } from 'src/helpers/firebase-admin.service';
 
 
 
-
 @Injectable()
 export class UsersService {
     constructor(
@@ -75,7 +74,7 @@ export class UsersService {
         await user.populate('metaData');
         await user.populate('profile');
 
-        if (!Object.keys(updateUserDto).length) throw new HttpException({ message: `Nothing to update`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.BAD_GATEWAY);
+        if (!Object.keys(updateUserDto).length) throw new HttpException({ message: `Nothing to update`, statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST);
 
         if (name) await this.userModel.updateOne({ _id: user._id }, { $set: { name } });
         if (email) await this.userModel.updateOne({ _id: user._id }, { $set: { email } });
@@ -363,6 +362,7 @@ export class UsersService {
                         acc.push({
                             ...user
                         });
+                        break;
                     default:
                         acc.push({
                             name: user.name,
@@ -495,6 +495,11 @@ export class UsersService {
         const user = await this.userModel.findById(idInToken);
         if (!user) throw new HttpException({ message: `User ${idInToken} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('metaData');
+        await user.populate('profile');
+
+        await this.profileModel.findByIdAndUpdate(user.profile, { $set: { phone: '' } });
+        await this.userModel.findByIdAndUpdate(user._id, { $set: { email: '' } });
+
         await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "", accountStatus: AccountStatus.DELETED } });
         return { message: 'Account was Deleted' }
     }
@@ -564,13 +569,21 @@ export class UsersService {
                     console.log(error)
                 }
                 return { message: "User gender verified", id: user._id };
+            case ComplaintAction.ACTIVATE:
+                await this.updateUser(id, { accountStatus: AccountStatus.ACTIVE });
+                try {
+                    await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
+                } catch (error) {
+                    console.log(error)
+                }
+                return { message: "User activated", id: user._id };
             default:
                 return { message: "Unknown action", id: user._id };
         }
 
     }
 
-    async getUsersCreateAt(){
+    async getUsersCreateAt() {
         const users = await this.userModel.find({}).select("inc_id").populate('metaData');
         const usersCreateAt = users.map(u => ({ inc_id: u.inc_id, createdAt: u.metaData.createdAt }));
         return usersCreateAt;

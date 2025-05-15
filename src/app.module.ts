@@ -37,7 +37,7 @@ import { PlanModule } from './plan/plan.module';
     {
       provide: APP_FILTER,
       useClass: QueryFailedFilter,
-    }
+    },
     // {
     //   provide: APP_INTERCEPTOR,
     //   useFactory: (reflector: Reflector) => new RateLimitInterceptor(reflector),

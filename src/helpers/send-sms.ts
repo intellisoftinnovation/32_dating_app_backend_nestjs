@@ -10,7 +10,8 @@ export const sendSMS = async (phone: string, message: string) => {
             {
                 body: message,
                 from: envs.TWILIO_PHONE_NUMBER,
-                to: phone
+                to: phone,
+                // statusCallback: ''
             }
         )
         return { send_status };

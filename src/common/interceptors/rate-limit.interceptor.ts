@@ -6,6 +6,7 @@ import { Reflector } from '@nestjs/core';
 const requestLog: Map<string, { count: number; startTime: number }> = new Map();
 
 @Injectable()
+// DOC: la estartegia se aplica calculando la cantidad de peticiones que se hacen en un intervalo de tiempo en milisegundos
 export class RateLimitInterceptor implements NestInterceptor {
   constructor(private readonly reflector: Reflector) {}
 

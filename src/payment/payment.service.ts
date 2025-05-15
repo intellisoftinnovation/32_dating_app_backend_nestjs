@@ -44,6 +44,7 @@ export class PaymentService {
             body: {
                 status: "pending",
                 // TBD: Add User Email !!
+                // payer_email: user.email,
                 payer_email: `test_user_1415234644@testuser.com`,
                 back_url: "https://chamoy.lat",
                 reason: plan.reason,
@@ -117,7 +118,8 @@ export class PaymentService {
             const result = await payment.search({
                 options: {
                     limit: LIMIT,
-                    offset: offset
+                    offset: offset, 
+                    sort: "date_created"
                 }
             });
 
