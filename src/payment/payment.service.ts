@@ -43,9 +43,9 @@ export class PaymentService {
         const results = await preApproval.create({
             body: {
                 status: "pending",
-                // TBD: Add User Email !!
-                // payer_email: user.email,
-                payer_email: `test_user_1415234644@testuser.com`,
+                // TODO: Add User Email !!
+                payer_email: user.email,
+                // payer_email: `test_user_1415234644@testuser.com`,
                 back_url: "https://chamoy.lat",
                 reason: plan.reason,
                 auto_recurring: {
