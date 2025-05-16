@@ -1,4 +1,4 @@
-# Chomy Backend
+# Chamoy Backend
 
 ## Setting Up the Project
 
