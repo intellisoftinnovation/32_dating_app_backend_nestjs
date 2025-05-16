@@ -205,6 +205,18 @@ export class UsersService {
         return user
     }
 
+    // Special method that retrieves a user without checking for suspended status
+    // This is used specifically for the ACTIVATE action in actionComplaint
+    async getUserByIdNoStatusCheck(id: string) {
+        const user = await this.userModel.findOne({ _id: id })
+        if (!user) throw new HttpException({ message: `User with ${id} dont exists` }, HttpStatus.NOT_FOUND)
+        await user.populate('metaData')
+        await user.populate('profile')
+        if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with ${id} was deleted` }, HttpStatus.NOT_FOUND)
+        // No check for SUSPENDED status here
+        return user
+    }
+
     async getSelfPreferences(id: string) {
         let user = await this.userModel.findById(id);
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
@@ -565,6 +577,29 @@ export class UsersService {
 
     async actionComplaint(id: string, complaintActionDto: ComplaintActionDto) {
         const { action } = complaintActionDto;
+        
+        // Special handling for ACTIVATE action to bypass the suspended check
+        if (action === ComplaintAction.ACTIVATE) {
+            // Get user without the suspended check
+            const user = await this.getUserByIdNoStatusCheck(id);
+            
+            // Update account status directly in the metaData model
+            await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { accountStatus: AccountStatus.ACTIVE } });
+            try {
+                await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
+            } catch (error) {
+                console.log(error)
+            }
+            
+            // Verify the update was successful
+            const updatedUser = await this.userModel.findById(id).populate('metaData');
+            if (updatedUser.metaData.accountStatus !== AccountStatus.ACTIVE) {
+                throw new HttpException({ message: `Failed to update user account status to ACTIVE` }, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            return { message: "User activated", id: user._id };
+        }
+        
+        // For all other actions, use the normal getUserById method with all checks
         const user = await this.getUserById(id);
 
         switch (action) {
@@ -572,7 +607,7 @@ export class UsersService {
                 await this.deleteUser(id);
                 return { message: "User deleted", id: user._id };
             case ComplaintAction.SUSPEND:
-                await this.updateUser(id, { accountStatus: AccountStatus.SUSPENDED });
+                await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { accountStatus: AccountStatus.SUSPENDED } });
                 return { message: "User suspended", id: user._id };
             case ComplaintAction.VERIFY_GENDER:
                 await this.verifyGender(id);
@@ -582,14 +617,6 @@ export class UsersService {
                     console.log(error)
                 }
                 return { message: "User gender verified", id: user._id };
-            case ComplaintAction.ACTIVATE:
-                await this.updateUser(id, { accountStatus: AccountStatus.ACTIVE });
-                try {
-                    await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
-                } catch (error) {
-                    console.log(error)
-                }
-                return { message: "User activated", id: user._id };
             case ComplaintAction.CHANGE_GENDER:
                 await this.updateUser(id, { gender: user.profile.gender == Gender.MALE ? Gender.FEMALE : Gender.MALE });
                 try {
@@ -601,7 +628,6 @@ export class UsersService {
             default:
                 return { message: "Unknown action", id: user._id };
         }
-
     }
 
     async getUsersCreateAt() {
