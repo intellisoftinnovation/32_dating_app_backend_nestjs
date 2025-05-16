@@ -25,16 +25,16 @@ export class PreferencesController {
   @Auth()
   async ResetSelfPreferences(@GetUser('_id') idInToken: string) {
     return await this.usersService.updateSelfPreferences(idInToken, {
-      ageRange:{
-        min: 18, 
-        max: 55, 
+      ageRange: {
+        min: 18,
+        max: 55,
       },
       altura: {
-        min: 150, 
-        max: 250, 
+        min: 150,
+        max: 250,
       },
       appearance: [],
-      bodyType:[],
+      bodyType: [],
       distance: 2500,
       englishLevel: [],
       etnicidad: [],
@@ -42,6 +42,12 @@ export class PreferencesController {
       language: [],
       smoking: [],
       typeOfRelationFind: [],
+      geoLocation: {
+        latitude: 40.7128,
+        longitude: -74.0060,
+        country: "Peru",
+        city: "Lima"
+      }
     });
   }
 

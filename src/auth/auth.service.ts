@@ -33,8 +33,6 @@ export class AuthService {
         const user = await this.usersService.findForPassRecovery(email)
         if (!user.profile.phone) throw new HttpException({ message: 'Phone not found' }, HttpStatus.PRECONDITION_FAILED);
 
-
-
         const path = EncryptionService.encrypt(user._id.toString());
 
         if (envs.ERRORLOGS) console.log(path, user._id.toString(), EncryptionService.decrypt(path))
@@ -48,8 +46,9 @@ export class AuthService {
         const user = await this.usersService.getUserById(user_id);
 
         const totp = generateOTP({ phone: user.profile.phone, password: user.password })
+        console.log( `User Profile phone` , user.profile.phone)
 
-        const { send_status } = await sendSMS(user.profile.phone, ` ${totp} es su código de verificación de Chamoy`)
+        const { send_status } = await sendSMS(`+${user.profile.phone}`, ` ${totp} es su código de verificación de Chamoy`)
 
         if (envs.ERRORLOGS) console.log(send_status)
 

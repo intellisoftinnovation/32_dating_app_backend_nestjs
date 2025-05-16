@@ -2,17 +2,17 @@ import { Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query }
 import { MatchRequestService } from './match-request.service';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { GetMatchRequestDto } from './dto/get-match-request.dto';
+import { GetMatchRequestDto, Side } from './dto/get-match-request.dto';
 import { MatchRequestStatus } from './schemas/match-request.schema';
 import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('match-request')
 export class MatchRequestController {
-  constructor(private readonly matchRequestService: MatchRequestService) {}
+  constructor(private readonly matchRequestService: MatchRequestService) { }
 
   @Post('/:id')
   @Auth()
-  async newMatchRequest(@Param('id') id: string , @GetUser('id') idInToken: string ) {
+  async newMatchRequest(@Param('id') id: string, @GetUser('id') idInToken: string) {
     return this.matchRequestService.newMatchRequest(idInToken, id);
   }
 
@@ -30,11 +30,28 @@ export class MatchRequestController {
     required: true,
     description: 'Status of the match request'
   })
-  async updateMatchRequest(@Param('id') id: string , @GetUser('id') idInToken: string, @Query('status') status: MatchRequestStatus) {
+  async updateMatchRequest(@Param('id') id: string, @GetUser('id') idInToken: string, @Query('status') status: MatchRequestStatus) {
 
-    if(!status) throw new HttpException({ message: `Invalid status` , details:` status must be one of following values ${Object.values(MatchRequestStatus)}`  }, HttpStatus.BAD_REQUEST); //TODO: Move this into DTO and make this of excelent mode
+    if (!status) throw new HttpException({ message: `Invalid status`, details: ` status must be one of following values ${Object.values(MatchRequestStatus)}` }, HttpStatus.BAD_REQUEST); //TODO: Move this into DTO and make this of excelent mode
 
-    return this.matchRequestService.updateMatchRequest(id , idInToken, status);
+    return this.matchRequestService.updateMatchRequest(id, idInToken, status);
   }
+
+  @Get('/name/:name')
+  @ApiQuery({
+    enum: Side,
+    name: 'side',
+    required: true,
+    description: 'Side of the match request'
+  })
+  @Auth()
+  async getMatchRequestByName(@GetUser('_id') from: string, @Param('name') name: string, @Query() params: { side: Side }) {
+    return this.matchRequestService.getMatchRequestByFromName(from, name, params);
+  }
+
+  // @Post('test/:target')
+  // async test(@Param('target') target: string) {
+  //   return this.matchRequestService.test(target);
+  // }
 
 }

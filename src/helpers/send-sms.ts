@@ -1,16 +1,17 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { envs } from 'src/config';
-import * as twilio from 'twilio';
+import twilio from 'twilio';
 
 export const sendSMS = async (phone: string, message: string) => {
     const client = twilio(envs.TWILIO_ACCOUNT_SID, envs.TWILIO_AUTH_TOKEN);
-
+    console.log(`phone for twilio`, phone)
     try {
         const send_status = await client.messages.create(
             {
                 body: message,
                 from: envs.TWILIO_PHONE_NUMBER,
-                to: phone
+                to: phone,
+                // statusCallback: ''
             }
         )
         return { send_status };

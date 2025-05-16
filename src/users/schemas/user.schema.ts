@@ -8,7 +8,7 @@ import { Preference } from './preferences-schema';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema()
+@Schema({timestamps: true})
 export class User {
   @Prop({required: true, type: String , unique: true})
   email: string;

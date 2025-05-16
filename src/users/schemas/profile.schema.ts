@@ -72,6 +72,9 @@ export class Profile {
     @Prop({ type: String, maxlength: 300})
     description: string;
 
+    @Prop({ type: String, default:"empty_fcm_token"})
+    fcmToken: string;
+
     @Prop({ type: String, enum: Object.values(Appearance)})
     appearance: Appearance
 
@@ -111,12 +114,11 @@ export class Profile {
     @Prop({ type: String , enum: Object.values(TypeOfRelationFind)})
     typeOfRelationFind: TypeOfRelationFind;
 
-    @Prop({ type: String, enum: Object.values(Language)})
-    language: Language;
+    @Prop({ type: [String], enum: Object.values(Language)})
+    language: Language[];
 
     @Prop({ type: String, enum: Object.values(FamilySituation)})
     familySituation: FamilySituation;
-
     
 
     @Prop({ type: Profit})

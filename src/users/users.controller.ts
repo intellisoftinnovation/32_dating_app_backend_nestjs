@@ -1,7 +1,7 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import {  ApiResponse } from '@nestjs/swagger';
+import { ApiResponse } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ItPrivileges } from 'src/auth/interfaces/ItPrivileges';
@@ -55,14 +55,20 @@ export class UsersController {
   // TODO: Disable this feature in production
   @Post("seed/:many")
   async seedUser(@Param('many', ParseIntPipe) many: number) {
-    if(many<=0) throw new HttpException({ message: 'Invalid number of users', help: 'Try a positive number', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
-    return await this.usersService.seedUsers(many); 
+    if (many <= 0) throw new HttpException({ message: 'Invalid number of users', help: 'Try a positive number', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
+    return await this.usersService.seedUsers(many);
   }
 
   @Get()
   @Auth()
-  async getAllUsers(@GetUser('_id') idInToken: string, @Query() getUsersDto:GetUsersDto  ) {
+  async getAllUsers(@GetUser('_id') idInToken: string, @Query() getUsersDto: GetUsersDto) {
     return await this.usersService.getAllUsers(idInToken, getUsersDto);
+  }
+
+  @Auth()
+  @Delete()
+  async deleteUser(@GetUser('_id') idInToken: string) {
+    return await this.usersService.deleteUser(idInToken);
   }
 
 

@@ -2,6 +2,7 @@ import * as speakeasy from 'speakeasy';
 import * as crypto from 'crypto';
 import * as base32 from 'thirty-two';
 import { envs } from 'src/config';
+import { object } from 'joi';
 
 const digits = 4 ; // Número de dígitos del código 
 
@@ -15,6 +16,7 @@ const generateSecretFromObject = (data: object): string => {
 
 // Método para generar un OTP basado en un objeto
 export const generateOTP = (data: object): string => {
+    if(envs.ERRORLOGS)console.log(data)
     const secret = generateSecretFromObject(data);
     return speakeasy.totp({
         secret,
@@ -26,6 +28,7 @@ export const generateOTP = (data: object): string => {
 
 // Método para verificar un OTP basado en un objeto
 export const verifyOTP = (data: object, token: string): boolean => {
+    if(envs.ERRORLOGS)console.log(object, token)
     const secret = generateSecretFromObject(data);
     return speakeasy.totp.verify({
         secret,

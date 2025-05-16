@@ -18,7 +18,12 @@ import { HaverSine } from 'src/tools/HAVERSINE';
 import { MatchRequestService } from 'src/match-request/match-request.service';
 import { PaymentService } from 'src/payment/payment.service';
 import { MatchRequestStatus } from 'src/match-request/schemas/match-request.schema';
-
+import { Complaint } from './schemas/complaint.schema';
+import { CreateComplaintDto } from './dto/create-complaint.dto';
+import { FindAllComplaintsDto } from './dto/find-all-complaint.dto';
+import { UpdateComplaintDto } from './dto/update-complaint.dto';
+import { ComplaintAction, ComplaintActionDto } from './dto/complaint-action.dto';
+import { FirebaseAdminService } from 'src/helpers/firebase-admin.service';
 
 
 
@@ -29,7 +34,9 @@ export class UsersService {
         @InjectModel(MetaData.name) private readonly metaDataModel: Model<MetaData>,
         @InjectModel(Profile.name) private readonly profileModel: Model<Profile>,
         @InjectModel(Preference.name) private readonly preferenceModel: Model<Preference>,
+        @InjectModel(Complaint.name) private readonly complaintModel: Model<Complaint>,
         @Inject(forwardRef(() => PaymentService)) private readonly paymentService: PaymentService,
+        @Inject(forwardRef(() => FirebaseAdminService)) private readonly firebaseAdminService: FirebaseAdminService,
         @Inject(forwardRef(() => MatchRequestService)) private readonly matchRequestService: MatchRequestService,
         private readonly jwtService: JwtService
     ) { }
@@ -43,7 +50,7 @@ export class UsersService {
         await this.userModel.findByIdAndUpdate(user._id, { metaData: metaData._id, profile: profile._id });
 
         const token = await this.jwtService.signAsync({ id: user._id });
-
+        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: token } });
         return { message: 'User created', id: user._id, token };
     }
 
@@ -57,9 +64,9 @@ export class UsersService {
         return user;
     }
 
-    async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    async updateUser(id: string, updateUserDto: UpdateUserDto & Partial<{ phoneVerified: boolean, genderVerified: boolean, accountStatus: AccountStatus, }>) {
 
-        const { name, email, englishLevel, etnicidad, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone, typeOfRelationFind } = updateUserDto
+        const { name, email, englishLevel, accountStatus, etnicidad, password, altura, appearance, birthdate, bodyType, description, familySituation, gender, geoLocation, language, photos, profit, smoking, socialNetworks, onBoardingCompleted, polityAgreement, phone, typeOfRelationFind, fcmToken, genderVerified, phoneVerified } = updateUserDto
 
         const user = await this.userModel.findById(id);
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
@@ -67,7 +74,7 @@ export class UsersService {
         await user.populate('metaData');
         await user.populate('profile');
 
-        if (!Object.keys(updateUserDto).length) throw new HttpException({ message: `Nothing to update`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.BAD_GATEWAY);
+        if (!Object.keys(updateUserDto).length) throw new HttpException({ message: `Nothing to update`, statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST);
 
         if (name) await this.userModel.updateOne({ _id: user._id }, { $set: { name } });
         if (email) await this.userModel.updateOne({ _id: user._id }, { $set: { email } });
@@ -88,6 +95,11 @@ export class UsersService {
             await this.profileModel.updateOne({ _id: user.profile }, { $set: { gender, genderVerified: false } });
         }
 
+        if (fcmToken) await this.profileModel.updateOne({ _id: user.profile }, { $set: { fcmToken } });
+        if (genderVerified) await this.profileModel.updateOne({ _id: user.profile }, { $set: { genderVerified } });
+        if (phoneVerified) await this.profileModel.updateOne({ _id: user.profile }, { $set: { phoneVerified } });
+        if (accountStatus) await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { accountStatus: accountStatus } });
+
 
         if (geoLocation) {
             await this.profileModel.updateOne({ _id: user.profile }, {
@@ -102,7 +114,7 @@ export class UsersService {
 
         if (language) await this.profileModel.updateOne({ _id: user.profile }, { $set: { language } });
         if (photos) {
-            if(photos.length > 6) throw new HttpException({ message: `You can only to have 6 photos`}, HttpStatus.BAD_REQUEST)
+            if (photos.length > 6) throw new HttpException({ message: `You can only to have 6 photos` }, HttpStatus.BAD_REQUEST)
             await this.profileModel.updateOne({ _id: user.profile }, { $set: { photos } })
         }
         if (socialNetworks) await this.profileModel.updateOne({ _id: user.profile }, { $set: { socialNetworks } });
@@ -134,7 +146,6 @@ export class UsersService {
 
         return { message: 'User updated', id: user._id };
     }
-
 
     async findOneForJwtStragety(id: string) {
         const user = await this.userModel.findById(id);
@@ -199,7 +210,15 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User ${id} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
         await user.populate('preference');
         if (!user.preference) {
-            const tempPreferences = await this.preferenceModel.create({ userId: user._id, ageRange: { min: 18, max: 55 }, altura: { min: 150, max: 200 } });
+            const tempPreferences = await this.preferenceModel.create({
+                userId: user._id, ageRange: { min: 18, max: 55 }, altura: { min: 150, max: 200 },
+                geoLocations: {
+                    city: "Lima",
+                    country: "Peru",
+                    latitude: -12.046373,
+                    longitude: -77.045817
+                }
+            });
             await this.userModel.findByIdAndUpdate(user._id, { preference: tempPreferences._id })
             user = await this.userModel.findById(id);
             await user.populate('preference')
@@ -272,7 +291,8 @@ export class UsersService {
         const selfLocation = selfUser.profile.geoLocations;
         let ageRange: AgeRange = null
         let alturaRange: Altura = null
-        const { page, size, age_min, age_max, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
+        const { page, size, paggination, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } = getUsersDto;
+        // console.log({ page, size, age_min, age_max, geoLocation, altura_min, altura_max, appearance, bodyType, englishLevel, etnicidad, familySituation, language, smoking, gender, typeOfRelationFind, distance, sortBy, enviroment } )
 
         if ((age_min || age_max) && !(age_min && age_max)) throw new HttpException({ message: 'Age range is invalid .', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
         if ((age_min && age_max) && (age_max < age_min)) throw new HttpException({ message: 'Age range is invalid ..', statusCode: HttpStatus.BAD_REQUEST }, HttpStatus.BAD_REQUEST)
@@ -294,7 +314,7 @@ export class UsersService {
 
         const timeDb = process.hrtime();
 
-        const data = await this.userModel.find({}).lean().populate('profile', '-_id -description -__v -socialNetworks').populate('metaData', 'createdAt -_id')
+        const data = await this.userModel.find({}).lean().populate('profile', '-_id -description -__v -socialNetworks').populate('metaData', 'createdAt accountStatus -_id')
 
         const timeDbEnd = process.hrtime(timeDb);
 
@@ -310,18 +330,30 @@ export class UsersService {
             const englishLevelMatch = englishLevel?.length ? englishLevel.includes(user.profile.englishLevel) : false;
             const etnicidadMatch = etnicidad?.length ? etnicidad.includes(user.profile.etnicidad) : false;
             const familySituationMatch = familySituation?.length ? familySituation.includes(user.profile.familySituation) : false;
-            const languageMatch = language?.length ? language.includes(user.profile.language) : false;
+
+            const languageMatch = Array.isArray(user.profile.language)
+                ? user.profile.language.some(lang => language.includes(lang))
+                : language?.length ? language.includes(user.profile.language) : false;
+
             const smokingMatch = smoking?.length ? smoking.includes(user.profile.smoking) : false;
             const typeOfRelationFindMatch = typeOfRelationFind?.length ? typeOfRelationFind.includes(user.profile.typeOfRelationFind) : false;
             let userDistance = -1;
+
+
+
             if (selfLocation && user.profile.geoLocations) {
                 userDistance = HaverSine(selfLocation.latitude, selfLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
             }
+
+            if (geoLocation && user.profile.geoLocations) {
+                userDistance = HaverSine(geoLocation.latitude, geoLocation.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude)
+            }
+
+
             let distanceMatch = distance ? (userDistance <= distance) : false;
             if (!selfLocation) distanceMatch = false;
 
-            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || language || smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
-
+            const hasAnyFilter = appearance || bodyType || englishLevel || etnicidad || familySituation || (language ? language.length : false) || smoking || typeOfRelationFind || distance || (alturaRange) || (ageRange);
             const match = genderMatch && (!hasAnyFilter || ageMatch || alturaMatch || distanceMatch || appearanceMatch || bodyTypeMatch || englishLevelMatch || etnicidadMatch || familySituationMatch || languageMatch || smokingMatch || typeOfRelationFindMatch);
 
             if (match) {
@@ -330,6 +362,7 @@ export class UsersService {
                         acc.push({
                             ...user
                         });
+                        break;
                     default:
                         acc.push({
                             name: user.name,
@@ -353,7 +386,7 @@ export class UsersService {
         const startIndex = (page - 1) * size;
         const endIndex = page * size;
 
-        const paginatedData = dataFiltered.slice(startIndex, endIndex);
+        const paginatedData = paggination ? dataFiltered.slice(startIndex, endIndex) : dataFiltered;
 
         const timeFilterEnd = process.hrtime(timeFilter);
 
@@ -379,7 +412,6 @@ export class UsersService {
         };
 
     }
-
 
     async refreshMatchHot(update: { count: number, to: mongoose.Types.ObjectId, profileID: mongoose.Types.ObjectId }[]) {
         console.log(update);
@@ -421,7 +453,8 @@ export class UsersService {
         if (user.metaData.accountStatus == AccountStatus.DELETED) throw new HttpException({ message: `User with id ${id} was deleted` }, HttpStatus.NOT_FOUND);
         if (user.metaData.accountStatus == AccountStatus.SUSPENDED) throw new HttpException({ message: `User with id ${id} is suspended` }, HttpStatus.FORBIDDEN);
 
-        const solicitud = await this.matchRequestService.getMatchRequestByFromTo(idInToken, id);
+        const solicitud1 = await this.matchRequestService.getMatchRequestByFromTo(idInToken, id);
+        const solicitud2 = await this.matchRequestService.getMatchRequestByFromTo(id, idInToken);
         let distance = -1;
         if (selfUser.profile.geoLocations && user.profile.geoLocations) distance = HaverSine(selfUser.profile.geoLocations.latitude, selfUser.profile.geoLocations.longitude, user.profile.geoLocations.latitude, user.profile.geoLocations.longitude);
         return {
@@ -430,20 +463,24 @@ export class UsersService {
                 altura: user.profile.altura,
                 appareanc: user.profile.appearance,
                 etnicidad: user.profile.etnicidad,
+                gender: user.profile.gender,
                 age: getAge(user.profile.birthdate),
                 bodyType: user.profile.bodyType,
                 description: user.profile.description,
                 englishLevel: user.profile.englishLevel,
                 familySituation: user.profile.familySituation,
                 distance,
+                geolocation: user.profile.geoLocations,
                 language: user.profile.language,
                 photos: user.profile.photos,
                 ...(user.profile.gender == Gender.MALE ? { profit: user.profile.profit } : {}),
                 smoking: user.profile.smoking,
                 typeOfRelationFind: user.profile.typeOfRelationFind,
                 lastConnection: user.metaData.lastConnection,
-                ...(solicitud ? { solicitud: solicitud.status } : {}),
-                ...((isPremium && solicitud && solicitud.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone, networks: user.profile.socialNetworks } : {}),
+                ...(solicitud1 ? { solicitud: solicitud1.status } : {}),
+                ...(solicitud2 ? { solicitud: solicitud2.status } : {}),
+                ...((isPremium && solicitud1 && solicitud1.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone, networks: user.profile.socialNetworks } : {}),
+                ...((isPremium && solicitud2 && solicitud2.status == MatchRequestStatus.ACCEPTED) ? { phone: user.profile.phone, networks: user.profile.socialNetworks } : {}),
             }
         };
     }
@@ -453,6 +490,159 @@ export class UsersService {
         if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
         await user.populate('metaData', '+active_session');
         await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "" } });
+    }
+
+    async deleteUser(idInToken: string) {
+        const user = await this.userModel.findById(idInToken);
+        if (!user) throw new HttpException({ message: `User ${idInToken} not found`, statusCode: HttpStatus.NOT_FOUND }, HttpStatus.NOT_FOUND);
+        await user.populate('metaData');
+        await user.populate('profile');
+
+        await this.profileModel.findByIdAndUpdate(user.profile, { $set: { phone: '' } });
+        await this.userModel.findByIdAndUpdate(user._id, { $set: { email: '' } });
+
+        await this.metaDataModel.findByIdAndUpdate(user.metaData, { $set: { active_session: "", accountStatus: AccountStatus.DELETED } });
+        return { message: 'Account was Deleted' }
+    }
+
+    // Complaint
+    async createComplaint(createComplaintDto: CreateComplaintDto, idInToken: string) {
+        const user = await this.userModel.findById(idInToken);
+        if (!user) throw new HttpException({ message: `User with id ${idInToken} not found` }, HttpStatus.NOT_FOUND);
+
+        const subject = await this.userModel.findById(createComplaintDto.subject);
+        if (!subject) throw new HttpException({ message: `User with id ${createComplaintDto.subject} not found` }, HttpStatus.NOT_FOUND);
+
+        const complaint = await this.complaintModel.create({ owner: user._id, subjet: subject._id, description: createComplaintDto.description, type: createComplaintDto.type });
+        return { message: "Complaint created", id: complaint._id };
+    }
+
+    async getAllComplaints(findAllComplaintsDto: FindAllComplaintsDto) {
+        const { status, page, size, type } = findAllComplaintsDto
+        const records = await this.complaintModel.countDocuments(
+            type ? { type } : {},
+            status ? { status } : {}
+        );
+
+        const complaints = await this.complaintModel.find(
+            status ? { status } : {},
+            type ? { type } : {}
+        ).skip((page - 1) * size).limit(size).populate({
+            path: 'owner',
+            select: 'name profile',
+            populate: {
+                path: 'profile',
+            },
+        }).populate({
+            path: 'subjet',
+            select: 'name profile',
+            populate: {
+                path: 'profile',
+            },
+        }).exec();
+
+        const metadata = {
+            records: records,
+            frame: page,
+            frameSize: size,
+            lastFrame: Math.ceil(records / size),
+        };
+
+        return {
+            data: complaints,
+            metadata,
+        }
+    }
+
+    async updateComplaint(id: string, updateComplaintDto: UpdateComplaintDto) {
+        const complaint = await this.complaintModel.findOne({ _id: id });
+        const { status } = updateComplaintDto;
+        if (!complaint) throw new HttpException({ message: `Complaint with Id ${id}` }, HttpStatus.NOT_FOUND);
+
+        await this.complaintModel.findByIdAndUpdate(id, { $set: { status } });
+        return { message: "Complaint updated", id: complaint._id };
+    }
+
+    async actionComplaint(id: string, complaintActionDto: ComplaintActionDto) {
+        const { action } = complaintActionDto;
+        const user = await this.getUserById(id);
+
+        switch (action) {
+            case ComplaintAction.DELETE:
+                await this.deleteUser(id);
+                return { message: "User deleted", id: user._id };
+            case ComplaintAction.SUSPEND:
+                await this.updateUser(id, { accountStatus: AccountStatus.SUSPENDED });
+                return { message: "User suspended", id: user._id };
+            case ComplaintAction.VERIFY_GENDER:
+                await this.verifyGender(id);
+                try {
+                    await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
+                } catch (error) {
+                    console.log(error)
+                }
+                return { message: "User gender verified", id: user._id };
+            case ComplaintAction.ACTIVATE:
+                await this.updateUser(id, { accountStatus: AccountStatus.ACTIVE });
+                try {
+                    await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
+                } catch (error) {
+                    console.log(error)
+                }
+                return { message: "User activated", id: user._id };
+            case ComplaintAction.CHANGE_GENDER:
+                await this.updateUser(id, { gender: user.profile.gender == Gender.MALE ? Gender.FEMALE : Gender.MALE });
+                try {
+                    await this.firebaseAdminService.sendNotificationToDevice(user.profile.fcmToken, { title: "✨ Ya puedes volver a Chamoy", body: "Hemos resuelto tu apelación." });
+                } catch (error) {
+                    console.log(error)
+                }
+                return { message: "User gender changed", id: user._id };
+            default:
+                return { message: "Unknown action", id: user._id };
+        }
+
+    }
+
+    async getUsersCreateAt() {
+        const users = await this.userModel.find({}).select("inc_id").populate('metaData');
+        const usersCreateAt = users.map(u => ({ inc_id: u.inc_id, createdAt: u.metaData.createdAt }));
+        return usersCreateAt;
+    }
+    // Stats 
+    async getStats() {
+        const users = await this.userModel.find({}).select("inc_id");
+
+        const users_this_month = await this.metaDataModel.find({ createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)) } }).select("inc_id");
+        const ids = users.map(u => u.inc_id);
+        const premiumCount = new Set();
+        const allSubscriptions = await this.paymentService.getAllSubscriptions();
+        let monthlyMoney = 0;
+        for (let i = 0; i < allSubscriptions.length; i++) {
+            const subscription = allSubscriptions[i];
+            if (subscription.status === "authorized" && ids.includes(subscription.external_reference.toString())) {
+                premiumCount.add(subscription.external_reference.toString());
+                if (subscription.auto_recurring && subscription.auto_recurring.transaction_amount) {
+                    monthlyMoney += subscription.auto_recurring.transaction_amount;
+                }
+            }
+        }
+        const history = [];
+        try {
+            const data = await this.paymentService.Reportes();
+            if (data) history.push(...data);
+        } catch {
+            console.log("Error al obtener los datos")
+        }
+
+        return {
+            Total_de_usuarios: users.length,
+            Total_de_premium: premiumCount.size,
+            Subscripciones_activas: premiumCount.size,
+            Total_de_usuarios_nuevos_este_mes: users_this_month.length,
+            ganancias_mensuales: monthlyMoney,
+            history
+        }
     }
 
 }

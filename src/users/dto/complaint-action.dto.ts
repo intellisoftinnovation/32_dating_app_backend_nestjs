@@ -1,0 +1,17 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEnum, IsNotEmpty } from "class-validator";
+
+export enum ComplaintAction {
+    ACTIVATE = "ACTIVATE",
+    DELETE = "DELETE",
+    SUSPEND = "SUSPEND",
+    VERIFY_GENDER = "VERIFY_GENDER",   
+    CHANGE_GENDER = "CHANGE_GENDER"
+}
+
+export class ComplaintActionDto {
+    @IsEnum(ComplaintAction)
+    @IsNotEmpty()
+    @ApiProperty({ enum: ComplaintAction })
+    action: ComplaintAction
+}

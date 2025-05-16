@@ -3,14 +3,15 @@ import { IsArray, IsEnum, IsOptional, IsNumber, IsBoolean } from "class-validato
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { Appearance, Etnicidad, EnglishLevel, BodyType, Language, FamilySituation, Gender, TypeOfRelationFind } from "../schemas/profile.schema";
 import { ApiPropertyOptional } from "@nestjs/swagger";
+import { GeoLocationDto } from "./update-user.dto";
 
 export enum SortBy {
     HOT = "HOT",
     NEW = "NEW"
 }
 
-export enum Enviroment { 
-    PRODUCTION  = "PRODUCTION",
+export enum Enviroment {
+    PRODUCTION = "PRODUCTION",
     DEVELOPMENT = "DEVELOPMENT"
 }
 
@@ -62,6 +63,31 @@ export class GetUsersDto extends PaginationDto {
     age_max: number
 
     @IsOptional()
+    @Transform(({ value }) => {
+        try {
+            // console.log(value)
+            // console.log(JSON.parse(value))
+            return typeof value === 'string' ? JSON.parse(value) : value;
+
+        } catch {
+            return undefined;
+        }
+    })
+    // @ValidateNested()
+    @Type(() => GeoLocationDto)
+    @ApiPropertyOptional({
+        type: GeoLocationDto, default: {
+            "geoLocation": {
+                "latitude": 40.7128,
+                "longitude": -74.006,
+                "country": "United States",
+                "city": "New York"
+            }
+        }
+    })
+    geoLocation?: GeoLocationDto;
+
+    @IsOptional()
     @IsNumber()
     @Type(() => Number)
     @ApiPropertyOptional()
@@ -93,7 +119,7 @@ export class GetUsersDto extends PaginationDto {
     @IsArray()
     @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
     @ApiPropertyOptional({ isArray: true, enum: Language })
-    language: Language[];
+    language: Language[] = [];
 
     @IsOptional()
     @IsEnum(TypeOfRelationFind, { each: true })
@@ -126,5 +152,11 @@ export class GetUsersDto extends PaginationDto {
     @IsEnum(Enviroment)
     @ApiPropertyOptional({ enum: Enviroment, default: Enviroment.PRODUCTION })
     enviroment: Enviroment = Enviroment.PRODUCTION
-  
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }) => value === "true")
+    @ApiPropertyOptional()
+    paggination: boolean = true;
+
 }
