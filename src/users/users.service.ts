@@ -240,7 +240,7 @@ export class UsersService {
 
     async updateSelfPreferences(id: string, updatePreferenceDto: UpdatePreferenceDto) {
         if (!Object.keys(updatePreferenceDto).length) throw new HttpException({ message: `Nothing to update` }, HttpStatus.BAD_REQUEST);
-        const { ageRange, altura, appearance, bodyType, distance, englishLevel, etnicidad, familySituation, language, smoking, typeOfRelationFind } = updatePreferenceDto;
+        const { ageRange, altura, appearance, bodyType, distance, englishLevel, etnicidad, familySituation, language, smoking, typeOfRelationFind, geoLocation } = updatePreferenceDto;
         let user = await this.userModel.findById(id);
 
         if (!user) throw new HttpException({ message: `User with id ${id} not found` }, HttpStatus.NOT_FOUND);
@@ -263,6 +263,7 @@ export class UsersService {
         if (language) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { language } });
         if (smoking) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { smoking } });
         if (typeOfRelationFind) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { typeOfRelationFind } });
+        if (geoLocation) await this.preferenceModel.findByIdAndUpdate(user.preference, { $set: { geoLocation } });
 
         await user.populate('preference', '-_id -__v')
 
@@ -672,5 +673,3 @@ export class UsersService {
     }
 
 }
-
-
