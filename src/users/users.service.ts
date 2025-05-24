@@ -147,7 +147,13 @@ export class UsersService {
     if (email)
       await this.userModel.updateOne({ _id: user._id }, { $set: { email } });
 
-    if (password) {
+    if (password !== undefined) {
+      if (typeof password !== 'string' || password.length < 6) {
+        throw new HttpException(
+          { message: 'Password must be at least 6 characters' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const passwordHash = bycrypt.hashSync(password, bycrypt.genSaltSync());
       await this.userModel.updateOne(
         { _id: user._id },
@@ -1235,5 +1241,14 @@ export class UsersService {
       ganancias_mensuales: monthlyMoney,
       history,
     };
+  }
+
+  async setNewPassword(userId: string, newPassword: string) {
+    const passwordHash = bycrypt.hashSync(newPassword, bycrypt.genSaltSync());
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $set: { password: passwordHash } },
+    );
+    return { message: 'Password updated successfully' };
   }
 }
