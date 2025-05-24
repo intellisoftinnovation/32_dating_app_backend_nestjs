@@ -147,13 +147,7 @@ export class UsersService {
     if (email)
       await this.userModel.updateOne({ _id: user._id }, { $set: { email } });
 
-    if (password !== undefined) {
-      if (typeof password !== 'string' || password.length < 6) {
-        throw new HttpException(
-          { message: 'Password must be at least 6 characters' },
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+    if (password) {
       const passwordHash = bycrypt.hashSync(password, bycrypt.genSaltSync());
       await this.userModel.updateOne(
         { _id: user._id },
@@ -224,12 +218,10 @@ export class UsersService {
         { _id: user.profile },
         {
           $set: {
-            geoLocations: {
-              latitude: geoLocation.latitude,
-              longitude: geoLocation.longitude,
-              country: geoLocation.country,
-              city: geoLocation.city,
-            },
+            'geoLocations.latitude': geoLocation.latitude,
+            'geoLocations.longitude': geoLocation.longitude,
+            'geoLocations.country': geoLocation.country,
+            'geoLocations.city': geoLocation.city,
           },
         },
       );
@@ -519,53 +511,53 @@ export class UsersService {
       await user.populate('preference');
     }
 
-    if (ageRange !== undefined)
+    if (ageRange)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { ageRange },
       });
-    if (altura !== undefined)
+    if (altura)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { altura },
       });
-    if (appearance !== undefined)
+    if (appearance)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { appearance },
       });
-    if (bodyType !== undefined)
+    if (bodyType)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { bodyType },
       });
-    if (distance !== undefined)
+    if (distance)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { distance },
       });
-    if (englishLevel !== undefined)
+    if (englishLevel)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { englishLevel },
       });
-    if (etnicidad !== undefined)
+    if (etnicidad)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { etnicidad },
       });
-    if (familySituation !== undefined)
+    if (familySituation)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { familySituation },
       });
-    if (language !== undefined)
+    if (language)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { language },
       });
-    if (smoking !== undefined)
+    if (smoking)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { smoking },
       });
-    if (typeOfRelationFind !== undefined)
+    if (typeOfRelationFind)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { typeOfRelationFind },
       });
-    if (geoLocation !== undefined)
+    if (geoLocation)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
-        $set: { geoLocations: geoLocation },
+        $set: { geoLocation },
       });
 
     await user.populate('preference', '-_id -__v');
@@ -1241,14 +1233,5 @@ export class UsersService {
       ganancias_mensuales: monthlyMoney,
       history,
     };
-  }
-
-  async setNewPassword(userId: string, newPassword: string) {
-    const passwordHash = bycrypt.hashSync(newPassword, bycrypt.genSaltSync());
-    await this.userModel.updateOne(
-      { _id: userId },
-      { $set: { password: passwordHash } },
-    );
-    return { message: 'Password updated successfully' };
   }
 }
