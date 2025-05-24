@@ -511,53 +511,53 @@ export class UsersService {
       await user.populate('preference');
     }
 
-    if (ageRange)
+    if (ageRange !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { ageRange },
       });
-    if (altura)
+    if (altura !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { altura },
       });
-    if (appearance)
+    if (appearance !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { appearance },
       });
-    if (bodyType)
+    if (bodyType !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { bodyType },
       });
-    if (distance)
+    if (distance !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { distance },
       });
-    if (englishLevel)
+    if (englishLevel !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { englishLevel },
       });
-    if (etnicidad)
+    if (etnicidad !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { etnicidad },
       });
-    if (familySituation)
+    if (familySituation !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { familySituation },
       });
-    if (language)
+    if (language !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { language },
       });
-    if (smoking)
+    if (smoking !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { smoking },
       });
-    if (typeOfRelationFind)
+    if (typeOfRelationFind !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
         $set: { typeOfRelationFind },
       });
-    if (geoLocation)
+    if (geoLocation !== undefined)
       await this.preferenceModel.findByIdAndUpdate(user.preference, {
-        $set: { geoLocation },
+        $set: { geoLocations: geoLocation },
       });
 
     await user.populate('preference', '-_id -__v');
@@ -1233,5 +1233,17 @@ export class UsersService {
       ganancias_mensuales: monthlyMoney,
       history,
     };
+  }
+
+  async setNewPassword(userId: string, newPassword: string) {
+    const passwordHash = require('bcrypt').hashSync(
+      newPassword,
+      require('bcrypt').genSaltSync(),
+    );
+    await this.userModel.updateOne(
+      { _id: userId },
+      { $set: { password: passwordHash } },
+    );
+    return { message: 'Password updated successfully' };
   }
 }
