@@ -705,6 +705,8 @@ export class UsersService {
     const timeFilter = process.hrtime();
 
     const dataFiltered = data.reduce((acc, user) => {
+      // Guard: skip users with missing/null profile
+      if (!user.profile) return acc;
       const genderMatch = gender?.length
         ? gender.includes(user.profile.gender)
         : true;
