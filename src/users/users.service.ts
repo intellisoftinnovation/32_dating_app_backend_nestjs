@@ -713,41 +713,38 @@ export class UsersService {
       const ageMatch = ageRange
         ? getAge(user.profile.birthdate) >= ageRange.min &&
           getAge(user.profile.birthdate) <= ageRange.max
-        : false;
+        : true;
       const alturaMatch = alturaRange
         ? user.profile.altura >= alturaRange.min &&
           user.profile.altura <= alturaRange.max
-        : false;
+        : true;
       const appearanceMatch = appearance?.length
         ? appearance.includes(user.profile.appearance)
-        : false;
+        : true;
       const bodyTypeMatch = bodyType?.length
         ? bodyType.includes(user.profile.bodyType)
-        : false;
+        : true;
       const englishLevelMatch = englishLevel?.length
         ? englishLevel.includes(user.profile.englishLevel)
-        : false;
+        : true;
       const etnicidadMatch = etnicidad?.length
         ? etnicidad.includes(user.profile.etnicidad)
-        : false;
+        : true;
       const familySituationMatch = familySituation?.length
         ? familySituation.includes(user.profile.familySituation)
-        : false;
-
-      const languageMatch = Array.isArray(user.profile.language)
-        ? user.profile.language.some((lang) => language.includes(lang))
-        : language?.length
-          ? language.includes(user.profile.language)
-          : false;
-
+        : true;
+      const languageMatch = language?.length
+        ? Array.isArray(user.profile.language)
+          ? user.profile.language.some((lang) => language.includes(lang))
+          : language.includes(user.profile.language)
+        : true;
       const smokingMatch = smoking?.length
         ? smoking.includes(user.profile.smoking)
-        : false;
+        : true;
       const typeOfRelationFindMatch = typeOfRelationFind?.length
         ? typeOfRelationFind.includes(user.profile.typeOfRelationFind)
-        : false;
+        : true;
       let userDistance = -1;
-
       if (selfLocation && user.profile.geoLocations) {
         userDistance = HaverSine(
           selfLocation.latitude,
@@ -756,7 +753,6 @@ export class UsersService {
           user.profile.geoLocations.longitude,
         );
       }
-
       if (geoLocation && user.profile.geoLocations) {
         userDistance = HaverSine(
           geoLocation.latitude,
@@ -765,43 +761,28 @@ export class UsersService {
           user.profile.geoLocations.longitude,
         );
       }
-
-      let distanceMatch = distance ? userDistance <= distance : false;
-      if (!selfLocation) distanceMatch = false;
-
-      const hasAnyFilter =
-        appearance ||
-        bodyType ||
-        englishLevel ||
-        etnicidad ||
-        familySituation ||
-        (language ? language.length : false) ||
-        smoking ||
-        typeOfRelationFind ||
-        distance ||
-        alturaRange ||
-        ageRange;
+      // Distance filter: if distance is set, userDistance must be <= distance
+      const distanceMatch = distance
+        ? userDistance !== -1 && userDistance <= distance
+        : true;
+      // All filters must match (AND logic)
       const match =
         genderMatch &&
-        (!hasAnyFilter ||
-          ageMatch ||
-          alturaMatch ||
-          distanceMatch ||
-          appearanceMatch ||
-          bodyTypeMatch ||
-          englishLevelMatch ||
-          etnicidadMatch ||
-          familySituationMatch ||
-          languageMatch ||
-          smokingMatch ||
-          typeOfRelationFindMatch);
-
+        ageMatch &&
+        alturaMatch &&
+        appearanceMatch &&
+        bodyTypeMatch &&
+        englishLevelMatch &&
+        etnicidadMatch &&
+        familySituationMatch &&
+        languageMatch &&
+        smokingMatch &&
+        typeOfRelationFindMatch &&
+        distanceMatch;
       if (match) {
         switch (enviroment) {
           case Enviroment.DEVELOPMENT:
-            acc.push({
-              ...user,
-            });
+            acc.push({ ...user });
             break;
           default:
             acc.push({
@@ -816,7 +797,6 @@ export class UsersService {
             break;
         }
       }
-
       return acc;
     }, []);
 
