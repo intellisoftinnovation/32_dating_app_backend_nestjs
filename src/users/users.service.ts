@@ -288,7 +288,7 @@ export class UsersService {
         );
       await this.profileModel.updateOne(
         { _id: user.profile },
-        { $set: { phone, phoneVerified: false } },
+        { $set: { phone, phoneVerified: true } },
       );
     }
 
