@@ -9,20 +9,16 @@ import { ConfirmPassRecoveryDto } from './dto/confir-pass-recovery.dto';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
 import { RateLimit } from 'src/common/decorators/rate-limit.decorator';
-import { SetNewPasswordDto } from './dto/set-new-password.dto';
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
-  @RateLimit(40, 60 * 1000)
+  @RateLimit(40, 60*1000)
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: HttpStatus.OK })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid credentials',
-  })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Invalid credentials' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'User suspended' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
   login(@Body() loginDto: LoginDto) {
@@ -30,19 +26,16 @@ export class AuthController {
   }
 
   @Post('register')
-  @RateLimit(30, 60 * 1000)
+  @RateLimit(30, 60*1000)
   @ApiResponse({ status: HttpStatus.CREATED })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'Email already exists',
-  })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Email already exists' })
   register(@Body() newRegisterDto: NewRegisterDto) {
     return this.authService.register(newRegisterDto);
   }
 
   @Post('wantpassrecovery')
-  @RateLimit(20, 60 * 1000)
+  @RateLimit(20, 60*1000)
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -57,29 +50,17 @@ export class AuthController {
   }
 
   @Post('confirmpassrecovery')
-  @RateLimit(20, 60 * 1000)
+  @RateLimit(20, 60*1000)
   @HttpCode(HttpStatus.OK)
   confirmPassRecovery(@Body() confirmPassRecoveryDto: ConfirmPassRecoveryDto) {
     return this.authService.confirmPassRecovery(confirmPassRecoveryDto);
   }
 
   @Post('otppassrecovery')
-  @RateLimit(20, 60 * 1000)
+  @RateLimit(20, 60*1000)
   @HttpCode(HttpStatus.OK)
   otpPassRecovery(@Body() otpPassRecoveryDto: OtpPassRecoveryDto) {
     return this.authService.otpPassRecovery(otpPassRecoveryDto);
-  }
-
-  @Post('setnewpassword')
-  @RateLimit(10, 60 * 1000)
-  @HttpCode(HttpStatus.OK)
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Password updated successfully',
-  })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User not found' })
-  setNewPassword(@Body() setNewPasswordDto: SetNewPasswordDto) {
-    return this.authService.setNewPassword(setNewPasswordDto);
   }
 
   @Post('/logout')
@@ -88,4 +69,7 @@ export class AuthController {
   logout(@GetUser('id') id: string) {
     return this.authService.logout(id);
   }
+
+
+
 }
