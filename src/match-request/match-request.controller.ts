@@ -5,6 +5,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { GetMatchRequestDto, Side } from './dto/get-match-request.dto';
 import { MatchRequestStatus } from './schemas/match-request.schema';
 import { ApiQuery } from '@nestjs/swagger';
+import { UpdateMatchRequestQueryDto } from './dto/update-match-request.dto';
 
 @Controller('match-request')
 export class MatchRequestController {
@@ -30,11 +31,9 @@ export class MatchRequestController {
     required: true,
     description: 'Status of the match request'
   })
-  async updateMatchRequest(@Param('id') id: string, @GetUser('id') idInToken: string, @Query('status') status: MatchRequestStatus) {
+  async updateMatchRequest(@Param('id') id: string, @GetUser('id') idInToken: string, @Query() query: UpdateMatchRequestQueryDto) {
 
-    if (!status) throw new HttpException({ message: `Invalid status`, details: ` status must be one of following values ${Object.values(MatchRequestStatus)}` }, HttpStatus.BAD_REQUEST); //TODO: Move this into DTO and make this of excelent mode
-
-    return this.matchRequestService.updateMatchRequest(id, idInToken, status);
+    return this.matchRequestService.updateMatchRequest(id, idInToken, query.status);
   }
 
   @Get('/name/:name')

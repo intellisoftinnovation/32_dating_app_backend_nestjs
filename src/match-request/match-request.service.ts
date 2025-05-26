@@ -13,6 +13,7 @@ export class MatchRequestService {
         @Inject(forwardRef(() => UsersService)) private readonly userService: UsersService,
         @Inject(forwardRef(() => PaymentService)) private readonly paymentService: PaymentService,
         @InjectModel(MatchRequest.name) private readonly matchRequestModel: Model<MatchRequest>,
+        @InjectModel('User') private readonly userModel: Model<any>,
         @Inject(FirebaseAdminService) private readonly firebaseAdminService: FirebaseAdminService
     ) { }
 
@@ -130,28 +131,46 @@ export class MatchRequestService {
         return result;
     }
 
-    async updateMatchRequest(id: string, idInToken: string, status: MatchRequestStatus) {
+    async updateMatchRequest(fromUserId: string, toUserId: string, status: MatchRequestStatus) {
         let err = null;
         let fcm = null;
-        const matchRequest = await this.matchRequestModel.findById(id);
-        if (!matchRequest) throw new HttpException({ message: `Match request with id ${id} not found` }, HttpStatus.NOT_FOUND);
+        // Find the match request where 'from' is fromUserId and 'to' is toUserId (the authenticated user)
+        const matchRequest = await this.matchRequestModel.findOne({ from: fromUserId, to: toUserId });
 
-        if (matchRequest.to.toString() != idInToken) throw new HttpException({ message: `You cant update match request with id ${id} ` }, HttpStatus.FORBIDDEN);
+        if (!matchRequest) {
+            throw new HttpException(
+                { message: `Match request from user ${fromUserId} to user ${toUserId} not found` },
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        // The check 'matchRequest.to.toString() != toUserId' is implicitly handled by the findOne query,
+        // but can be kept for explicit safety if desired, though it would be redundant here.
 
         matchRequest.status = status;
         await matchRequest.save();
 
         try {
             if (matchRequest.status === MatchRequestStatus.ACCEPTED) {
-                fcm = await this.firebaseAdminService.sendNotificationToDevice(matchRequest.from.profile.fcmToken, { title: "🔥 ¡Es un match!", body: "Tu solicitud fue aceptada. Es hora de romper el hielo y empezar la conversación." });
+                // Assuming 'from' user's profile and fcmToken are populated or accessible
+                // If matchRequest.from is just an ID, you might need to populate it first: await matchRequest.populate('from.profile');
+                const senderUser = await this.userModel.findById(matchRequest.from).select('profile.fcmToken').exec();
+                
+                if (senderUser && senderUser.profile && senderUser.profile.fcmToken) {
+                  fcm = await this.firebaseAdminService.sendNotificationToDevice(
+                    senderUser.profile.fcmToken, 
+                    { title: "🔥 ¡Es un match!", body: "Tu solicitud fue aceptada. Es hora de romper el hielo y empezar la conversación." }
+                  );
+                } else {
+                  console.log(`FCM token not found for user ${matchRequest.from.toString()} to send match acceptance notification.`);
+                }
             }
         } catch (error) {
             err = error;
-            console.log(error)
+            console.log('Error sending FCM notification for match acceptance:', error);
         }
 
-
-        return { message: `Match request with id ${id} updated`, fcm, err };
+        return { message: `Match request with id ${matchRequest._id} updated successfully`, fcm, err };
     }
 
     async getMatchRequestByFromTo(from: string, to: string) {
