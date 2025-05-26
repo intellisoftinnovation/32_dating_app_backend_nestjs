@@ -1,24 +1,26 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MatchRequestService } from './match-request.service';
 import { MatchRequestController } from './match-request.controller';
-import { AuthModule } from 'src/auth/auth.module';
-import { UsersModule } from 'src/users/users.module';
-import { MatchRequest, MatchRequestSchema } from './schemas/match-request.schema';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MatchRequest, MatchRequestSchema } from './schemas/match-request.schema';
+import { UsersModule } from 'src/users/users.module';
 import { PaymentModule } from 'src/payment/payment.module';
+import { User, UserSchema } from '../users/schemas/user.schema'; 
+import { AuthModule } from 'src/auth/auth.module';
 import { FirebaseAdminService } from 'src/helpers/firebase-admin.service';
 
 @Module({
   imports: [
-    forwardRef(()=> AuthModule),
-    forwardRef(()=> UsersModule),
-    forwardRef(()=> PaymentModule),
     MongooseModule.forFeature([
-      {name: MatchRequest.name , schema: MatchRequestSchema}
-    ])
+      { name: MatchRequest.name, schema: MatchRequestSchema },
+      { name: User.name, schema: UserSchema }, 
+    ]),
+    forwardRef(() => AuthModule),
+    forwardRef(() => UsersModule),
+    forwardRef(() => PaymentModule),
   ],
   controllers: [MatchRequestController],
   providers: [MatchRequestService, FirebaseAdminService],
-  exports: [MatchRequestService]
+  exports: [MatchRequestService],
 })
 export class MatchRequestModule {}
