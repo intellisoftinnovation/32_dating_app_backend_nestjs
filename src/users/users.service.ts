@@ -941,12 +941,12 @@ export class UsersService {
         lastConnection: user.metaData.lastConnection,
         ...(solicitud1 ? { solicitud: solicitud1.status } : {}),
         ...(solicitud2 ? { solicitud: solicitud2.status } : {}),
-        ...(isPremium &&
+        ...(
         solicitud1 &&
         solicitud1.status == MatchRequestStatus.ACCEPTED
           ? { phone: user.profile.phone, networks: user.profile.socialNetworks }
           : {}),
-        ...(isPremium &&
+        ...(
         solicitud2 &&
         solicitud2.status == MatchRequestStatus.ACCEPTED
           ? { phone: user.profile.phone, networks: user.profile.socialNetworks }
