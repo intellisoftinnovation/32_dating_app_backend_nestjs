@@ -46,6 +46,8 @@ export class GetUsersDto extends PaginationDto {
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)    @IsOptional()
+    @IsNumber()
     @Type(() => Number)
     @ApiPropertyOptional()
     altura_max: number
@@ -64,6 +66,9 @@ export class GetUsersDto extends PaginationDto {
 
     @IsOptional()
     @Transform(({ value }) => {
+        if (value === null || value === undefined || value === '') {
+            return undefined;
+        }
         try {
             // console.log(value)
             // console.log(JSON.parse(value))

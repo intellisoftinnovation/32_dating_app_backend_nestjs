@@ -745,7 +745,7 @@ export class UsersService {
         ? typeOfRelationFind.includes(user.profile.typeOfRelationFind)
         : true;
       let userDistance = -1;
-      if (selfLocation && user.profile.geoLocations) {
+      if (selfLocation && user.profile.geoLocations && user.profile.geoLocations.latitude !== undefined && user.profile.geoLocations.longitude !== undefined) {
         userDistance = HaverSine(
           selfLocation.latitude,
           selfLocation.longitude,
@@ -753,7 +753,7 @@ export class UsersService {
           user.profile.geoLocations.longitude,
         );
       }
-      if (geoLocation && user.profile.geoLocations) {
+      if (geoLocation && user.profile.geoLocations && user.profile.geoLocations.latitude !== undefined && user.profile.geoLocations.longitude !== undefined) {
         userDistance = HaverSine(
           geoLocation.latitude,
           geoLocation.longitude,

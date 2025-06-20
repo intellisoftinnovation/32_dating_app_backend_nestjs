@@ -97,10 +97,8 @@ export class Profile {
     photos: string[];
 
     @Prop({ type: [SocialNetwork]})
-    socialNetworks: SocialNetwork[];
-
-    @Prop({ type: GeoLocation })
-    geoLocations: GeoLocation;
+    socialNetworks: SocialNetwork[];    @Prop({ type: GeoLocation, default: null })
+    geoLocations?: GeoLocation;
 
     @Prop({ type: Number})
     altura: number;
