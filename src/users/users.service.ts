@@ -619,7 +619,12 @@ export class UsersService {
         HttpStatus.NOT_FOUND,
       );
     await selfUser.populate('profile', 'geoLocations');
-    const selfLocation = selfUser.profile.geoLocations;
+    
+    // Ensure user has profile
+    await this.ensureUserHasProfile(selfUser);
+    
+    // Check if profile exists before accessing geoLocations
+    const selfLocation = selfUser.profile ? selfUser.profile.geoLocations : null;
     let ageRange: AgeRange = null;
     let alturaRange: Altura = null;
     const {
@@ -745,7 +750,7 @@ export class UsersService {
         ? typeOfRelationFind.includes(user.profile.typeOfRelationFind)
         : true;
       let userDistance = -1;
-      if (selfLocation && user.profile.geoLocations && user.profile.geoLocations.latitude !== undefined && user.profile.geoLocations.longitude !== undefined) {
+      if (selfLocation && selfLocation.latitude !== undefined && selfLocation.longitude !== undefined && user.profile.geoLocations && user.profile.geoLocations.latitude !== undefined && user.profile.geoLocations.longitude !== undefined) {
         userDistance = HaverSine(
           selfLocation.latitude,
           selfLocation.longitude,
@@ -909,7 +914,7 @@ export class UsersService {
       idInToken,
     );
     let distance = -1;
-    if (selfUser.profile.geoLocations && user.profile.geoLocations)
+    if (selfUser.profile && selfUser.profile.geoLocations && user.profile.geoLocations)
       distance = HaverSine(
         selfUser.profile.geoLocations.latitude,
         selfUser.profile.geoLocations.longitude,
@@ -1227,5 +1232,16 @@ export class UsersService {
       { $set: { password: passwordHash } },
     );
     return { message: 'Password updated successfully' };
+  }
+
+  // Helper method to ensure user has a profile
+  private async ensureUserHasProfile(user: any) {
+    if (!user.profile) {
+      const profile = await this.profileModel.create({ userId: user._id });
+      await this.userModel.findByIdAndUpdate(user._id, {
+        profile: profile._id,
+      });
+      await user.populate('profile');
+    }
   }
 }
