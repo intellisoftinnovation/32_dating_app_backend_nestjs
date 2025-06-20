@@ -75,6 +75,7 @@ export class GetUsersDto extends PaginationDto {
     })
     // @ValidateNested()
     @Type(() => GeoLocationDto)
+    @IsOptional()
     @ApiPropertyOptional({
         type: GeoLocationDto, default: {
             "geoLocation": {
